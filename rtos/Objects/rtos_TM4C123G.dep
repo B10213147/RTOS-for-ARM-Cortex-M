@@ -1,0 +1,20 @@
+Dependencies for Project 'rtos', Target 'TM4C123G': (DO NOT MODIFY !)
+F (.\main.c)(0x595B885B)(--c99 -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\TI\TM4C123G\Include-I I:\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM -DTM4C123GH6PM-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (.\CMSIS\Device\TI\TM4C123G\Include\TM4C123.h)(0x595B71BB)
+I (.\CMSIS\Device\TI\TM4C123G\Include\TM4C123GH6PM.h)(0x576176B0)
+I (.\CMSIS\Include\core_cm4.h)(0x573CA1AC)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmSimd.h)(0x573CA1AB)
+I (.\CMSIS\Device\TI\TM4C123G\Include\system_TM4C123.h)(0x595B71C3)
+F (.\CMSIS\Device\TI\TM4C123G\Source\startup_TM4C123.s)(0x51B68FA6)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork -I I:\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "TM4C123GH6PM SETA 1"--list .\listings\startup_tm4c123.lst --xref -o .\objects\startup_tm4c123.o --depend .\objects\startup_tm4c123.d)
+F (.\CMSIS\Device\TI\TM4C123G\Source\system_TM4C123.c)(0x550A117A)(--c99 -c --cpu Cortex-M4.fp -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\TI\TM4C123G\Include-I I:\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Include\TM4C123-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DTM4C123GH6PM -DTM4C123GH6PM-o .\objects\system_tm4c123.o --omf_browse .\objects\system_tm4c123.crf --depend .\objects\system_tm4c123.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (.\CMSIS\Device\TI\TM4C123G\Include\TM4C123.h)(0x595B71BB)
+I (.\CMSIS\Device\TI\TM4C123G\Include\TM4C123GH6PM.h)(0x576176B0)
+I (.\CMSIS\Include\core_cm4.h)(0x573CA1AC)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmSimd.h)(0x573CA1AB)
+I (.\CMSIS\Device\TI\TM4C123G\Include\system_TM4C123.h)(0x595B71C3)
