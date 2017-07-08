@@ -9,7 +9,8 @@
 #define RTOS_H_
 
 #include "stm32f0xx.h"                  // Device header
+#include "rt_TypeDef.h"
 
-void OS_init(uint32_t slice);
+void OS_Init(uint32_t slice, enum trig_sr source);
 
 #endif /* RTOS_H_ */
