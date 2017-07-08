@@ -12,8 +12,17 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+void empty(void){
+}
+
+/* Private variables ---------------------------------------------------------*/
+voidfuncptr priv_task = empty;
+voidfuncptr sch_tab[] = {empty};
+int sch_tst = task_completed;
+int sch_idx = 0;
+int sch_length = sizeof(sch_tab) / sizeof(*sch_tab);
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -21,7 +30,7 @@
   * @param  slice: timeslice in microseconds.
   * @retval None
   */
-void OS_Init(uint32_t slice, enum trig_sr source){
+void OS_Init(uint32_t slice, triggerType source){
     uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
     switch(source){
         case CM_SysTick:
