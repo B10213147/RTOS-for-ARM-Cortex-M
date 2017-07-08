@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rtos.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -22,5 +23,6 @@
   */
 void OS_init(uint32_t slice){
     uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
-    while(SysTick_Config(slice_quantum));
+    //while(SysTick_Config(slice_quantum));
+    ST_TIM6_Config(slice_quantum);
 }

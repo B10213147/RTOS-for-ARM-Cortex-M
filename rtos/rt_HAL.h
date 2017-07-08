@@ -8,4 +8,8 @@
 #ifndef RT_HAL_H_
 #define RT_HAL_H_
 
+#include <stdint.h>
+
+void ST_TIM6_Config(uint16_t ticks);
+
 #endif /* RT_HAL_H_ */
