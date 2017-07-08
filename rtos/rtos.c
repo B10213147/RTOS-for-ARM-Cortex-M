@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rtos.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -20,7 +21,16 @@
   * @param  slice: timeslice in microseconds.
   * @retval None
   */
-void OS_init(uint32_t slice){
+void OS_Init(uint32_t slice, enum trig_sr source){
     uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
-    while(SysTick_Config(slice_quantum));
+    switch(source){
+        case CM_SysTick:
+            while(SysTick_Config(slice_quantum));
+            break;
+        case ST_Tim6:
+            ST_TIM6_Config(slice_quantum);
+            break;
+        default:
+            break;
+    }
 }
