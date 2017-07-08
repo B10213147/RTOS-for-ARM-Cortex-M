@@ -17,6 +17,7 @@ void SysTick_Handler(void);
 void TIM6_DAC_IRQHandler(void);
 void ST_Blink(void);
 void TI_Blink(void);
+extern void os_sched(void);
 
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -49,7 +50,7 @@ int a = 0;
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
         // Schedular
-        a = a % 10 + 1;
+        os_sched();
         // Sched ends
         if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
             // Task spent over time slice
@@ -70,7 +71,7 @@ void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
         // Schedular
-        a = a % 10 + 1;
+        os_sched();
         // Sched ends
         if(TIM6->SR & TIM_SR_UIF){
             // Task spent over time slice

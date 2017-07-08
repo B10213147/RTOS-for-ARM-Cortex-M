@@ -24,7 +24,7 @@ struct OS_MCB{
 */
 typedef enum{
     CM_SysTick,
-    ST_Tim6
+    ST_TIM6
 }triggerType;
 
 typedef enum{
