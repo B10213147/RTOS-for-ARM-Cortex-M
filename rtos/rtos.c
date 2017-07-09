@@ -13,7 +13,6 @@
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-
 void os_sched(void);
 
 /* Private variables ---------------------------------------------------------*/
@@ -28,6 +27,10 @@ int sch_idx = 0;
 /**
   * @brief  Start real time operating system.
   * @param  slice: timeslice in microseconds.
+  * @param  source: RTOS trigger source
+  *   This parameter can be one of the following values:
+  *     @arg CM_SysTick
+  *     @arg ST_TIM6
   * @retval None
   */
 void OS_Init(uint32_t slice, triggerType source){
