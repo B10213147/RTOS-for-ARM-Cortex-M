@@ -11,6 +11,6 @@
 #include "stm32f0xx.h"                  // Device header
 #include "rt_TypeDef.h"
 
-void OS_Init(uint32_t slice, enum trig_sr source);
+void OS_Init(uint32_t slice, triggerType source);
 
 #endif /* RTOS_H_ */

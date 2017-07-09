@@ -22,9 +22,14 @@ struct OS_MCB{
     
 };
 */
-enum trig_sr{
+typedef enum{
     CM_SysTick,
-    ST_Tim6
-};
+    ST_TIM6
+}triggerType;
+
+typedef enum{
+    task_completed,
+    task_running
+}sch_statusType;
 
 #endif /* RT_TYPEDEF_H_ */
