@@ -20,7 +20,7 @@ struct OS_TSK{
 */
 typedef struct{
     unsigned int begin, end, length;
-    void *data;
+    char *data;
 }OS_MCB;
 
 typedef enum{
