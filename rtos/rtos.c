@@ -13,20 +13,15 @@
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-void empty(void){
-}
-void foo1(void){
-}
-void foo2(void){
-}
+
 void os_sched(void);
 
 /* Private variables ---------------------------------------------------------*/
-voidfuncptr priv_task = empty;
-voidfuncptr sch_tab[] = {foo1, foo2};
+extern voidfuncptr priv_task;
+extern voidfuncptr sch_tab[];
+extern int sch_length;
 int sch_tst = task_completed;
 int sch_idx = 0;
-int sch_length = sizeof(sch_tab) / sizeof(*sch_tab);
 
 /* Private functions ---------------------------------------------------------*/
 
