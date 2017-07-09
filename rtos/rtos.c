@@ -49,6 +49,11 @@ void OS_Init(uint32_t slice, triggerType source){
     }
 }
 
+/**
+  * @brief  Entry of RTOS.
+  * @param  None
+  * @retval None
+  */
 void os_sched(void){
     if(sch_tst == task_running){ while(1); }
     sch_tst = task_running;

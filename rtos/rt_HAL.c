@@ -46,7 +46,6 @@ void ST_TIM6_Config(uint16_t ticks){
   * @param  None
   * @retval None
   */
-int a = 0;
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
         // Schedular
