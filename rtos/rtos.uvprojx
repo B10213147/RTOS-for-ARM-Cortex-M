@@ -401,6 +401,13 @@
         </Group>
         <Group>
           <GroupName>Memory</GroupName>
+          <Files>
+            <File>
+              <FileName>rt_mailbox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_mailbox.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>User</GroupName>
@@ -824,6 +831,13 @@
         </Group>
         <Group>
           <GroupName>Memory</GroupName>
+          <Files>
+            <File>
+              <FileName>rt_mailbox.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_mailbox.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>User</GroupName>
