@@ -23,8 +23,15 @@ voidfuncptr sch_tab[32];
 int sch_length = 0;
 
 /* Private functions ---------------------------------------------------------*/
+
+/**
+  * @brief  Start real time operating system.
+  * @param  task_entry: Function wait for scheduled
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
 int OS_Task_Create(voidfuncptr task_entry){
-    if(sch_length >= 32){ return -1; }
+    if(sch_length >= 32){ return 1; }
     sch_tab[sch_length] = task_entry;
     sch_length++;    
     return 0;
