@@ -376,9 +376,28 @@
       <Groups>
         <Group>
           <GroupName>Kernel</GroupName>
+          <Files>
+            <File>
+              <FileName>rtos.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rtos.c</FilePath>
+            </File>
+            <File>
+              <FileName>rt_HAL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_HAL.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Thread</GroupName>
+          <Files>
+            <File>
+              <FileName>rt_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_task.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Memory</GroupName>
@@ -780,9 +799,28 @@
       <Groups>
         <Group>
           <GroupName>Kernel</GroupName>
+          <Files>
+            <File>
+              <FileName>rtos.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rtos.c</FilePath>
+            </File>
+            <File>
+              <FileName>rt_HAL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_HAL.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Thread</GroupName>
+          <Files>
+            <File>
+              <FileName>rt_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_task.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Memory</GroupName>
