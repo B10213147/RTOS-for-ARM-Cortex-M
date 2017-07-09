@@ -13,19 +13,19 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-void empty(void){
+int OS_Task_Create(voidfuncptr task_entry);
+void __empty(void){
 }
-void foo1(void);
-void foo2(void);
 
 /* Private variables ---------------------------------------------------------*/
-voidfuncptr priv_task = empty;
-voidfuncptr sch_tab[] = {foo1, empty, foo2, empty};
-int sch_length = sizeof(sch_tab) / sizeof(*sch_tab);
+voidfuncptr priv_task = __empty;
+voidfuncptr sch_tab[32];
+int sch_length = 0;
 
 /* Private functions ---------------------------------------------------------*/
-void foo1(void){
-}
-
-void foo2(void){
+int OS_Task_Create(voidfuncptr task_entry){
+    if(sch_length >= 32){ return -1; }
+    sch_tab[sch_length] = task_entry;
+    sch_length++;    
+    return 0;
 }
