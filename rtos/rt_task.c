@@ -24,8 +24,8 @@ int sch_length = 0;
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Start real time operating system.
-  * @param  task_entry: Function wait for scheduled
+  * @brief  Create task for RTOS.
+  * @param  task_entry: Function wait for scheduled.
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
@@ -36,6 +36,11 @@ int OS_Task_Create(voidfuncptr task_entry){
     return 0;
 }
 
+/**
+  * @brief  Delete a task in RTOS.
+  * @param  task: Function wait for deleted.
+  * @retval None
+  */
 void OS_Task_Delete(voidfuncptr task){
     for(int i = 0; i < sch_length; i++){
         if(sch_tab[i] == task){
