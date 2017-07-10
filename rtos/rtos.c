@@ -63,6 +63,19 @@ void OS_Enable(void){
     }
 }
 
+void OS_Disable(void){
+    switch(rt_trigger){
+    case CM_SysTick:
+        SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+        break;
+    case ST_TIM6:
+        TIM6->DIER &= ~TIM_DIER_UIE;
+        break;
+    default:
+        break;
+    }
+}
+
 /**
   * @brief  Entry of RTOS.
   * @param  None

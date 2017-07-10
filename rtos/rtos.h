@@ -15,5 +15,6 @@
 
 void OS_Init(uint32_t slice, triggerType source);
 void OS_Enable(void);
+void OS_Disable(void);
 
 #endif /* RTOS_H_ */
