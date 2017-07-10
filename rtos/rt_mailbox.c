@@ -20,6 +20,17 @@ int OS_MBX_Read(OS_MCB *mail, char *data, unsigned int num_bytes){
 }
 
 int OS_MBX_Write(OS_MCB *mail, char *data, unsigned int num_bytes){
+    int diff = mail->begin - mail->end;
+    if(diff <= 0){
+        if(num_bytes >= mail->length + diff){
+            return 1;   // Remaining space is not enough
+        }
+    }
+    else{
+        if(num_bytes >= diff){
+            return 1;   // Remaining space is not enough
+        }
+    }
     for(int i = 0; i < num_bytes; i++){
         int idx = (mail->end + 1) % mail->length;
         if(idx == mail->begin){ return 1; } // Mailbox is full
