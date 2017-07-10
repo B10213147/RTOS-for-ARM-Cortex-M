@@ -11,6 +11,7 @@
 #include "stm32f0xx.h"                  // Device header
 #include "rt_TypeDef.h"
 #include "rt_task.h"
+#include "rt_mailbox.h"
 
 void OS_Init(uint32_t slice, triggerType source);
 
