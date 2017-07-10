@@ -17,11 +17,12 @@ struct OS_TCB{
 struct OS_TSK{
     
 };
-
-struct OS_MCB{
-    
-};
 */
+typedef struct{
+    unsigned int begin, end, length;
+    char *data;
+}OS_MCB;
+
 typedef enum{
     CM_SysTick,
     ST_TIM6
