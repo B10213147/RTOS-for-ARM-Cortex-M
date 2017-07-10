@@ -16,6 +16,13 @@
 /* Private functions ---------------------------------------------------------*/
 
 int OS_MBX_Read(OS_MCB *mail, char *data, unsigned int num_bytes){
+    for(int i = 0; i < num_bytes; i++){
+        if(mail->begin == mail->end){   
+            return 1;   // Mailbox is empty
+        } 
+        data[i] = mail->data[mail->begin];
+        mail->begin = (mail->begin + 1) % mail->length;
+    }
     return 0;
 }
 
