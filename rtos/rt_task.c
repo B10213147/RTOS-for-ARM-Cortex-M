@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rt_task.h"
+#include "rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -17,7 +18,7 @@ void __empty(void){
 
 /* Private variables ---------------------------------------------------------*/
 voidfuncptr priv_task = __empty;
-voidfuncptr sch_tab[16];
+voidfuncptr sch_tab[MAX_TASK_N];
 int sch_length = 0;
 
 /* Private functions ---------------------------------------------------------*/
@@ -29,7 +30,7 @@ int sch_length = 0;
   * @retval 1 Function failed.
   */
 int OS_Task_Create(voidfuncptr task_entry){
-    if(sch_length >= 16){ return 1; }
+    if(sch_length >= MAX_TASK_N){ return 1; }
     sch_tab[sch_length] = task_entry;
     sch_length++;    
     return 0;
