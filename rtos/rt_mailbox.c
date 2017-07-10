@@ -20,18 +20,18 @@
   * @param  mail: Pointer to mailbox.
   * @param  data: Pointer to a space where read data can put.
   * @param  num_bytes: Number of bytes to read.
-  * @retval 0 Function succeeded.
-  * @retval 1 Function failed.
+  * @retval Number of successfully read bytes.
   */
 int OS_MBX_Read(OS_MCB *mail, char *data, unsigned int num_bytes){
-    for(int i = 0; i < num_bytes; i++){
+    int i;
+    for(i = 0; i < num_bytes; i++){
         if(mail->begin == mail->end){   
-            return 1;   // Mailbox is empty
+            break;   // Mailbox is empty
         } 
         data[i] = mail->data[mail->begin];
         mail->begin = (mail->begin + 1) % mail->length;
     }
-    return 0;
+    return i;
 }
 
 /**
