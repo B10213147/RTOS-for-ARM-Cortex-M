@@ -17,7 +17,7 @@ void SysTick_Handler(void);
 void TIM6_DAC_IRQHandler(void);
 void ST_Blink(void);
 void TI_Blink(void);
-extern void os_sched(void);
+extern void rt_sched(void);
 
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -36,7 +36,6 @@ void ST_TIM6_Config(uint16_t ticks){
     }
     TIM6->ARR = ticks - 1U;
     TIM6->CNT = 0;
-    TIM6->DIER |= TIM_DIER_UIE;
     NVIC_EnableIRQ(TIM6_DAC_IRQn);
     TIM6->CR1 |= TIM_CR1_CEN;
 }
@@ -49,7 +48,7 @@ void ST_TIM6_Config(uint16_t ticks){
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
         // Schedular
-        os_sched();
+        rt_sched();
         // Sched ends
         if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
             // Task spent over time slice
@@ -70,7 +69,7 @@ void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
         // Schedular
-        os_sched();
+        rt_sched();
         // Sched ends
         if(TIM6->SR & TIM_SR_UIF){
             // Task spent over time slice
