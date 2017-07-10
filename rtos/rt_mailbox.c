@@ -15,6 +15,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+/**
+  * @brief  Read data from mailbox.
+  * @param  mail: Pointer to mailbox.
+  * @param  data: Pointer to a space where read data can put.
+  * @param  num_bytes: Number of bytes to read.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
 int OS_MBX_Read(OS_MCB *mail, char *data, unsigned int num_bytes){
     for(int i = 0; i < num_bytes; i++){
         if(mail->begin == mail->end){   
@@ -26,6 +34,14 @@ int OS_MBX_Read(OS_MCB *mail, char *data, unsigned int num_bytes){
     return 0;
 }
 
+/**
+  * @brief  Write data into mailbox.
+  * @param  mail: Pointer to mailbox.
+  * @param  data: Pointer to data wait for written.
+  * @param  num_bytes: Number of bytes to read.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
 int OS_MBX_Write(OS_MCB *mail, char *data, unsigned int num_bytes){
     int diff = mail->begin - mail->end;
     if(diff <= 0){
