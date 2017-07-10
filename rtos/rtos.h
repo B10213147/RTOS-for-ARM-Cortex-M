@@ -14,5 +14,6 @@
 #include "rt_mailbox.h"
 
 void OS_Init(uint32_t slice, triggerType source);
+void OS_Enable(void);
 
 #endif /* RTOS_H_ */
