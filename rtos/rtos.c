@@ -50,6 +50,11 @@ void OS_Init(uint32_t slice, triggerType source){
     }
 }
 
+/**
+  * @brief  Enable RTOS.
+  * @param  None
+  * @retval None
+  */
 void OS_Enable(void){
     switch(rt_trigger){
     case CM_SysTick:
@@ -63,6 +68,11 @@ void OS_Enable(void){
     }
 }
 
+/**
+  * @brief  Disable RTOS.
+  * @param  None
+  * @retval None
+  */
 void OS_Disable(void){
     switch(rt_trigger){
     case CM_SysTick:
