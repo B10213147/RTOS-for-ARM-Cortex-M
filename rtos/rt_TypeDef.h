@@ -9,19 +9,28 @@
 #define RT_TYPEDEF_H_
 
 typedef void (*voidfuncptr)(void);
-/*
-struct OS_TCB{
-    
-};
 
+typedef enum{
+    Inactive,
+    Ready,
+    Running
+}rt_stateType;
+
+typedef struct OS_TCB{
+    rt_stateType state;
+    struct OS_TCB *next;
+	voidfuncptr function;
+	void *arg;
+}*P_TCB;
+/*
 struct OS_TSK{
     
 };
 */
-typedef struct{
+typedef struct OS_MCB{
     unsigned int begin, end, length;
     char *data;
-}OS_MCB;
+}*P_MCB;
 
 typedef enum{
     CM_SysTick,
