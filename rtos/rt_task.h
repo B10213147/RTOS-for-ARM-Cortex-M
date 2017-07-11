@@ -10,7 +10,7 @@
 
 #include "rt_TypeDef.h"
 
-int OS_Task_Create(voidfuncptr task_entry);
+int OS_Task_Create(voidfuncptr task_entry, void *argv);
 void OS_Task_Delete(voidfuncptr task);
 void __empty(void);
 
