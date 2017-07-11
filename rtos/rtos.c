@@ -22,6 +22,7 @@ extern int sch_length;
 int sch_tst = task_completed;
 int sch_idx = 0;
 triggerType rt_trigger;
+int rt_start_counter = 0;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -56,15 +57,18 @@ void OS_Init(uint32_t slice, triggerType source){
   * @retval None
   */
 void OS_Enable(void){
-    switch(rt_trigger){
-    case CM_SysTick:
-        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
-        break;
-    case ST_TIM6:
-        TIM6->DIER |= TIM_DIER_UIE;
-        break;
-    default:
-        break;
+    rt_start_counter++;
+    if(rt_start_counter > 0){
+        switch(rt_trigger){
+        case CM_SysTick:
+            SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+            break;
+        case ST_TIM6:
+            TIM6->DIER |= TIM_DIER_UIE;
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -74,6 +78,7 @@ void OS_Enable(void){
   * @retval None
   */
 void OS_Disable(void){
+    rt_start_counter--;
     switch(rt_trigger){
     case CM_SysTick:
         SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
