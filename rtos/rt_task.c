@@ -17,12 +17,14 @@
 void __empty(void){
 }
 P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv);
+int rt_tsk_delete(OS_TID task_id);
 
 /* Private variables ---------------------------------------------------------*/
 voidfuncptr priv_task = __empty;
 voidfuncptr sch_tab[MAX_TASK_N];
 int sch_length = 0;
 void *os_active_TCB[max_active_TCB];
+P_TCB os_ready_tasks[max_active_TCB];
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -35,6 +37,9 @@ void *os_active_TCB[max_active_TCB];
 int OS_Task_Create(voidfuncptr task_entry, void *argv){
     P_TCB task;
     task = rt_tsk_create(task_entry, argv);
+    if(task == 0){ return 1; }  // Task create failed
+    os_ready_tasks[sch_length] = task;
+    sch_length++;
     /*
     if(sch_length >= MAX_TASK_N){ return 1; }
     sch_tab[sch_length] = task_entry;
@@ -49,13 +54,18 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
   * @retval None
   */
 void OS_Task_Delete(voidfuncptr task){
+    P_TCB p_TCB;
     for(int i = 0; i < sch_length; i++){
-        if(sch_tab[i] == task){
+        //if(sch_tab[i] == task){
+        if(os_ready_tasks[i]->function == task){   
+            p_TCB = os_ready_tasks[i];
             for(int j = i; j < sch_length; j++){
                 // Shift the rest of sch_tab[]
-                sch_tab[j] = sch_tab[j+1];
+                //sch_tab[j] = sch_tab[j+1];
+                os_ready_tasks[j] = os_ready_tasks[j+1];
             }
             sch_length--;
+            rt_tsk_delete(p_TCB->task_id);
             break;
         }
     }
@@ -77,14 +87,22 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     OS_Disable();
     
     p_task = (P_TCB)malloc(sizeof(struct OS_TCB));
-    if(p_task == 0){ return 0;}   // Memory alloc failed
+    if(p_task == 0){ 
+        // Memory alloc failed
+        OS_Enable();
+        return 0; 
+    }   
     p_task->function = task_entry;
     p_task->arg = argv;
     p_task->state = Ready;
     p_task->next = 0;
     
     task_id = rt_get_TID();
-    if(task_id == 0){ return 0; }   // Task create failed
+    if(task_id == 0){ 
+        // Task create failed
+        OS_Enable();
+        return 0; 
+    }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
     

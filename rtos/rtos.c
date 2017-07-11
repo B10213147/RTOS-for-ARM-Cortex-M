@@ -105,7 +105,8 @@ void rt_sched(void){
     sch_tst = task_running;
     
     priv_task();
-    sch_tab[sch_idx]();
+    //sch_tab[sch_idx]();
+    os_ready_tasks[sch_idx]->function();
     
     sch_idx = (sch_idx + 1) % sch_length;
     sch_tst = task_completed;
