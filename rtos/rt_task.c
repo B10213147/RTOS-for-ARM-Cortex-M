@@ -11,14 +11,12 @@
 #include <stdlib.h>
 
 /* Private typedef -----------------------------------------------------------*/
-typedef     uint16_t     OS_TID;
-
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void __empty(void){
 }
-OS_TID rt_tsk_create(voidfuncptr task_entry, void *argv);
+P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv);
 
 /* Private variables ---------------------------------------------------------*/
 voidfuncptr priv_task = __empty;
@@ -35,8 +33,8 @@ void *os_active_TCB[max_active_TCB];
   * @retval 1 Function failed.
   */
 int OS_Task_Create(voidfuncptr task_entry, void *argv){
-    OS_TID tid;
-    tid = rt_tsk_create(task_entry, argv);
+    P_TCB task;
+    task = rt_tsk_create(task_entry, argv);
     /*
     if(sch_length >= MAX_TASK_N){ return 1; }
     sch_tab[sch_length] = task_entry;
@@ -73,23 +71,26 @@ OS_TID rt_get_TID(void){
     return 0;   // os_active_TCB is full
 }
 
-OS_TID rt_tsk_create(voidfuncptr task_entry, void *argv){
+P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     P_TCB p_task;
+    OS_TID task_id;
     OS_Disable();
     
     p_task = (P_TCB)malloc(sizeof(struct OS_TCB));
-    while(p_task == 0);   // Memory alloc failed
+    if(p_task == 0){ return 0;}   // Memory alloc failed
     p_task->function = task_entry;
     p_task->arg = argv;
     p_task->state = Ready;
     p_task->next = 0;
     
-    os_active_TCB[sch_length] = p_task;
-    sch_length++; 
+    task_id = rt_get_TID();
+    if(task_id == 0){ return 0; }   // Task create failed
+    os_active_TCB[task_id-1] = p_task;
+    p_task->task_id = task_id;
     
     OS_Enable();
     
-    return sch_length;
+    return p_task;
 }
 
 int rt_tsk_delete(OS_TID task_id){

@@ -8,6 +8,10 @@
 #ifndef RT_TYPEDEF_H_
 #define RT_TYPEDEF_H_
 
+#include <stdint.h>
+
+typedef     uint16_t     OS_TID;
+
 typedef void (*voidfuncptr)(void);
 
 typedef enum{
@@ -18,6 +22,7 @@ typedef enum{
 
 typedef struct OS_TCB{
     rt_stateType state;
+    OS_TID task_id;
     struct OS_TCB *next;
 	voidfuncptr function;
 	void *arg;
