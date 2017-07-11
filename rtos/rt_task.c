@@ -14,8 +14,6 @@
 typedef     uint16_t     OS_TID;
 
 /* Private define ------------------------------------------------------------*/
-#define     max_active_TCB      32
-
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void __empty(void){
@@ -82,4 +80,19 @@ OS_TID rt_tsk_create(voidfuncptr task_entry, void *argv){
     OS_Enable();
     
     return sch_length;
+}
+
+int rt_tsk_delete(OS_TID task_id){
+    P_TCB p_TCB;
+    OS_Disable();
+    
+    if(task_id > max_active_TCB || os_active_TCB[task_id-1] == 0){
+        return 1;   // Task not found
+    }
+    p_TCB = os_active_TCB[task_id-1];
+    os_active_TCB[task_id-1] = 0;
+    free(p_TCB);
+    
+    OS_Enable();
+    return 0;
 }

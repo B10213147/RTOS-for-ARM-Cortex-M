@@ -49,6 +49,10 @@ void OS_Init(uint32_t slice, triggerType source){
     default:
         break;
     }
+    // Initialize task TCB pointers to NULL.
+    for(int i = 0; i < max_active_TCB; i++){
+        os_active_TCB[i] = 0;
+    }
 }
 
 /**
