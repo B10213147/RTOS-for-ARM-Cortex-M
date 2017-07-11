@@ -63,6 +63,16 @@ void OS_Task_Delete(voidfuncptr task){
     }
 }
 
+OS_TID rt_get_TID(void){
+    OS_TID i;
+    for(i = 1; i <= max_active_TCB; i++){
+        if(os_active_TCB[i-1] == 0){
+            return i;
+        }
+    }
+    return 0;   // os_active_TCB is full
+}
+
 OS_TID rt_tsk_create(voidfuncptr task_entry, void *argv){
     P_TCB p_task;
     OS_Disable();
