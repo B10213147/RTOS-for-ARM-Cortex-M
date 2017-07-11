@@ -11,6 +11,8 @@
 #include <stdlib.h>
 
 /* Private typedef -----------------------------------------------------------*/
+typedef     uint16_t     OS_TID;
+
 /* Private define ------------------------------------------------------------*/
 #define     max_active_TCB      32
 
@@ -18,6 +20,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void __empty(void){
 }
+OS_TID rt_tsk_create(voidfuncptr task_entry, void *argv);
 
 /* Private variables ---------------------------------------------------------*/
 voidfuncptr priv_task = __empty;
@@ -34,24 +37,13 @@ void *os_active_TCB[max_active_TCB];
   * @retval 1 Function failed.
   */
 int OS_Task_Create(voidfuncptr task_entry, void *argv){
-    P_TCB p_task;
-    OS_Disable();
-    
-    p_task = (P_TCB)malloc(sizeof(struct OS_TCB));
-    if(p_task == 0){ return 1; }    // Memory alloc failed
-    p_task->function = task_entry;
-    p_task->arg = argv;
-    p_task->state = Ready;
-    p_task->next = 0;
-    
-    os_active_TCB[sch_length] = p_task;
-    sch_length++;
+    OS_TID tid;
+    tid = rt_tsk_create(task_entry, argv);
     /*
     if(sch_length >= MAX_TASK_N){ return 1; }
     sch_tab[sch_length] = task_entry;
     sch_length++;
     */    
-    OS_Enable();
     return 0;
 }
 
@@ -71,4 +63,23 @@ void OS_Task_Delete(voidfuncptr task){
             break;
         }
     }
+}
+
+OS_TID rt_tsk_create(voidfuncptr task_entry, void *argv){
+    P_TCB p_task;
+    OS_Disable();
+    
+    p_task = (P_TCB)malloc(sizeof(struct OS_TCB));
+    while(p_task == 0);   // Memory alloc failed
+    p_task->function = task_entry;
+    p_task->arg = argv;
+    p_task->state = Ready;
+    p_task->next = 0;
+    
+    os_active_TCB[sch_length] = p_task;
+    sch_length++; 
+    
+    OS_Enable();
+    
+    return sch_length;
 }
