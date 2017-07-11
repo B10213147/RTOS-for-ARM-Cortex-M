@@ -31,8 +31,10 @@ int sch_length = 0;
   */
 int OS_Task_Create(voidfuncptr task_entry){
     if(sch_length >= MAX_TASK_N){ return 1; }
+    OS_Disable();
     sch_tab[sch_length] = task_entry;
-    sch_length++;    
+    sch_length++;   
+    OS_Enable();
     return 0;
 }
 
