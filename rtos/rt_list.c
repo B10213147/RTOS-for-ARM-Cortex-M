@@ -59,3 +59,9 @@ void rt_rmv_task(P_TCB *list, P_TCB task){
     }
     task->next = 0;    
 }
+
+OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
+    P_TCB p_task;
+    for(p_task = list; p_task->function != func; p_task = p_task->next);    
+    return p_task->task_id;
+}

@@ -17,6 +17,5 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv);
 void __empty(void);
 
 extern void *os_active_TCB[];
-extern P_TCB os_ready_tasks[];
 
 #endif /* RT_TASK_H_ */

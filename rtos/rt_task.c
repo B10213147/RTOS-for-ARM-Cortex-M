@@ -21,9 +21,7 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv);
 int rt_tsk_delete(OS_TID task_id);
 
 /* Private variables ---------------------------------------------------------*/
-int sch_length = 0;
 void *os_active_TCB[max_active_TCB];
-P_TCB os_ready_tasks[max_active_TCB];
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -38,11 +36,9 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
     P_TCB task;
     task = rt_tsk_create(task_entry, argv);
     if(task == 0){ return 1; }  // Task create failed
-    rt_put_first(&os_rdy_tasks, task);
-    /*
-    os_ready_tasks[sch_length] = task;
-    sch_length++;
-    */
+    //rt_put_first(&os_rdy_tasks, task);
+    rt_put_last(&os_rdy_tasks, task);
+
     return 0;
 }
 
@@ -53,6 +49,15 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
   */
 void OS_Task_Delete(voidfuncptr task){
     P_TCB p_TCB;
+    if(os_running_tsk->function == task){
+        // Delete running task
+        p_TCB = os_running_tsk;
+        os_running_tsk = 0;
+    }
+    else{
+        // Search ready list
+        
+    }
     /*
     for(int i = 0; i < sch_length; i++){
         if(os_ready_tasks[i]->function == task){   
