@@ -10,8 +10,13 @@
 
 #include "rt_TypeDef.h"
 
-int OS_Task_Create(voidfuncptr task_entry);
+#define     max_active_TCB      32
+
+int OS_Task_Create(voidfuncptr task_entry, void *argv);
 void OS_Task_Delete(voidfuncptr task);
 void __empty(void);
+
+extern void *os_active_TCB[];
+extern P_TCB os_ready_tasks[];
 
 #endif /* RT_TASK_H_ */
