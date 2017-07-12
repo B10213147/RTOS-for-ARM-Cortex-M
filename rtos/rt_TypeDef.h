@@ -28,11 +28,6 @@ typedef struct OS_TCB{
 	void *arg;
 }*P_TCB;
 
-typedef struct OS_TSK{
-    P_TCB task;
-    P_TCB next;
-}*P_TSK;
-
 typedef struct OS_MCB{
     unsigned int begin, end, length;
     char *data;
