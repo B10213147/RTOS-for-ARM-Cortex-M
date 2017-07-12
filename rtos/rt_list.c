@@ -33,3 +33,15 @@ void rt_put_last(P_TCB task){
         cur->next = task;
     }
 }
+
+P_TCB rt_get_first(void){
+    P_TCB task, next;
+    task = os_rdy.task;
+    next = os_rdy.next;
+    if(next != 0){
+        os_rdy.next = next->next;
+        next->next = 0;
+    }    
+    os_rdy.task = next;
+    return task;
+}
