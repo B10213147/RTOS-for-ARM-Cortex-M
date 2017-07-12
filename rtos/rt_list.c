@@ -18,7 +18,18 @@ struct OS_TSK os_rdy = {0, 0};
 /* Private functions ---------------------------------------------------------*/
 
 void rt_put_first(P_TCB task){
-    P_TCB prev = os_rdy.task;
+    os_rdy.task->next = os_rdy.next;
+    os_rdy.next = os_rdy.task;
     os_rdy.task = task;
-    os_rdy.next = prev;
+}
+
+void rt_put_last(P_TCB task){
+    P_TCB cur;
+    if(os_rdy.next == 0){
+        os_rdy.next = task;
+    }
+    else{
+        for(cur = os_rdy.next; cur->next != 0; cur = cur->next);
+        cur->next = task;
+    }
 }
