@@ -37,9 +37,9 @@ void rt_put_last(P_TCB *list, P_TCB task){
 P_TCB rt_get_first(P_TCB *list){
     P_TCB task;
     task = *list;
-    if(task != 0){
-        task->next = 0;
+    if(task != 0){        
         *list = (*list)->next;
+        task->next = 0;
     }
     return task;
 }

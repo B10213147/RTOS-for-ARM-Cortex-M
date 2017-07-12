@@ -22,6 +22,7 @@ int sch_idx = 0;
 triggerType rt_trigger;
 int rt_start_counter = 0;
 
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -101,9 +102,15 @@ void OS_Disable(void){
 void rt_sched(void){
     if(sch_tst == task_running){ while(1); }
     sch_tst = task_running;
-
+    
+    os_running_tsk = rt_get_first(&os_rdy_tasks);
+    os_running_tsk->function();
+    rt_put_last(&os_rdy_tasks, os_running_tsk);
+    os_running_tsk = 0;
+/*
     os_ready_tasks[sch_idx]->function();
     
     sch_idx = (sch_idx + 1) % sch_length;
+*/
     sch_tst = task_completed;
 }

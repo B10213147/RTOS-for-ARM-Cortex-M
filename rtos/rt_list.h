@@ -10,4 +10,12 @@
 
 #include "rt_TypeDef.h"
 
+void rt_put_first(P_TCB *list, P_TCB task);
+void rt_put_last(P_TCB *list, P_TCB task);
+P_TCB rt_get_first(P_TCB *list);
+void rt_rmv_task(P_TCB *list, P_TCB task);
+
+extern struct OS_TCB *os_running_tsk;
+extern struct OS_TCB *os_rdy_tasks;
+
 #endif /* RT_LIST_H_ */

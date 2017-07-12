@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_task.h"
 #include "rtos.h"
+#include "rt_list.h"
 #include <stdlib.h>
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,8 +38,11 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
     P_TCB task;
     task = rt_tsk_create(task_entry, argv);
     if(task == 0){ return 1; }  // Task create failed
+    rt_put_first(&os_rdy_tasks, task);
+    /*
     os_ready_tasks[sch_length] = task;
     sch_length++;
+    */
     return 0;
 }
 
@@ -49,6 +53,7 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
   */
 void OS_Task_Delete(voidfuncptr task){
     P_TCB p_TCB;
+    /*
     for(int i = 0; i < sch_length; i++){
         if(os_ready_tasks[i]->function == task){   
             p_TCB = os_ready_tasks[i];
@@ -61,6 +66,7 @@ void OS_Task_Delete(voidfuncptr task){
             break;
         }
     }
+    */
 }
 
 /**
