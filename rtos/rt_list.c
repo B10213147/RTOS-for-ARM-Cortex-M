@@ -53,7 +53,7 @@ void rt_rmv_task(P_TCB *list, P_TCB task){
     else{
         // Sreach the list
         for(prev = *list, cur = (*list)->next; \
-            cur != task; \
+            cur != task && cur != 0; \
             prev = cur, cur = cur->next);
         prev->next = cur->next;
     }
@@ -62,6 +62,9 @@ void rt_rmv_task(P_TCB *list, P_TCB task){
 
 OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
     P_TCB p_task;
-    for(p_task = list; p_task->function != func; p_task = p_task->next);    
-    return p_task->task_id;
+    for(p_task = list; \
+        p_task->function != func && p_task != 0; \
+        p_task = p_task->next);
+    if(p_task != 0){ return p_task->task_id; }
+    else{ return 0; }
 }

@@ -13,7 +13,7 @@
 #define     max_active_TCB      32
 
 int OS_Task_Create(voidfuncptr task_entry, void *argv);
-//void OS_Task_Delete(voidfuncptr task);
+void OS_Task_Delete(voidfuncptr task);
 void __empty(void);
 
 extern void *os_active_TCB[];

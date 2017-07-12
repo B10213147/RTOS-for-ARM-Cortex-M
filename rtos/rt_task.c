@@ -49,14 +49,23 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
   */
 void OS_Task_Delete(voidfuncptr task){
     P_TCB p_TCB;
+    OS_TID tid;
     if(os_running_tsk->function == task){
         // Delete running task
-        p_TCB = os_running_tsk;
+        tid = os_running_tsk->task_id;
         os_running_tsk = 0;
     }
     else{
         // Search ready list
-        
+        tid = rt_find_TID(os_rdy_tasks, task);
+        if(tid != 0){
+            p_TCB = os_active_TCB[tid-1];
+            rt_rmv_task(&os_rdy_tasks, p_TCB);
+        }
+    }
+    
+    if(tid != 0){
+        rt_tsk_delete(tid);
     }
     /*
     for(int i = 0; i < sch_length; i++){
