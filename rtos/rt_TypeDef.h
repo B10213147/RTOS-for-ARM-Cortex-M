@@ -27,11 +27,12 @@ typedef struct OS_TCB{
 	voidfuncptr function;
 	void *arg;
 }*P_TCB;
-/*
-struct OS_TSK{
-    
-};
-*/
+
+typedef struct OS_TSK{
+    P_TCB task;
+    P_TCB next;
+}*P_TSK;
+
 typedef struct OS_MCB{
     unsigned int begin, end, length;
     char *data;

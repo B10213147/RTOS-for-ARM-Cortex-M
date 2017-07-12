@@ -8,5 +8,6 @@
 #ifndef RT_LIST_H_
 #define RT_LIST_H_
 
+#include "rt_TypeDef.h"
 
 #endif /* RT_LIST_H_ */
