@@ -16,8 +16,6 @@
 void rt_sched(void);
 
 /* Private variables ---------------------------------------------------------*/
-extern voidfuncptr priv_task;
-extern voidfuncptr sch_tab[];
 extern int sch_length;
 int sch_tst = task_completed;
 int sch_idx = 0;
@@ -103,9 +101,7 @@ void OS_Disable(void){
 void rt_sched(void){
     if(sch_tst == task_running){ while(1); }
     sch_tst = task_running;
-    
-    priv_task();
-    //sch_tab[sch_idx]();
+
     os_ready_tasks[sch_idx]->function();
     
     sch_idx = (sch_idx + 1) % sch_length;

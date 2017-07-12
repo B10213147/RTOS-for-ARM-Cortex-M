@@ -20,8 +20,6 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv);
 int rt_tsk_delete(OS_TID task_id);
 
 /* Private variables ---------------------------------------------------------*/
-voidfuncptr priv_task = __empty;
-voidfuncptr sch_tab[MAX_TASK_N];
 int sch_length = 0;
 void *os_active_TCB[max_active_TCB];
 P_TCB os_ready_tasks[max_active_TCB];
@@ -40,11 +38,6 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
     if(task == 0){ return 1; }  // Task create failed
     os_ready_tasks[sch_length] = task;
     sch_length++;
-    /*
-    if(sch_length >= MAX_TASK_N){ return 1; }
-    sch_tab[sch_length] = task_entry;
-    sch_length++;
-    */    
     return 0;
 }
 
@@ -56,12 +49,10 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
 void OS_Task_Delete(voidfuncptr task){
     P_TCB p_TCB;
     for(int i = 0; i < sch_length; i++){
-        //if(sch_tab[i] == task){
         if(os_ready_tasks[i]->function == task){   
             p_TCB = os_ready_tasks[i];
             for(int j = i; j < sch_length; j++){
-                // Shift the rest of sch_tab[]
-                //sch_tab[j] = sch_tab[j+1];
+                // Shift the rest of os_ready_tasks[]
                 os_ready_tasks[j] = os_ready_tasks[j+1];
             }
             sch_length--;
@@ -106,8 +97,7 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
     
-    OS_Enable();
-    
+    OS_Enable();    
     return p_task;
 }
 
@@ -116,7 +106,9 @@ int rt_tsk_delete(OS_TID task_id){
     OS_Disable();
     
     if(task_id > max_active_TCB || os_active_TCB[task_id-1] == 0){
-        return 1;   // Task not found
+        // Task not found
+        OS_Enable();
+        return 1;   
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
