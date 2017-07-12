@@ -28,7 +28,8 @@ P_TCB os_ready_tasks[max_active_TCB];
 
 /**
   * @brief  Create task for RTOS.
-  * @param  task_entry: Function wait for scheduled.
+  * @param  task_entry: Function name.
+  * @param  argv: Function's arguments.
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
@@ -62,6 +63,12 @@ void OS_Task_Delete(voidfuncptr task){
     }
 }
 
+/**
+  * @brief  Get a none-occupied id from os_active_TCB
+  * @param  None
+  * @retval None-occupied id.
+  * @retval 0 os_active_TCB is full.
+  */
 OS_TID rt_get_TID(void){
     OS_TID i;
     for(i = 1; i <= max_active_TCB; i++){
@@ -72,6 +79,13 @@ OS_TID rt_get_TID(void){
     return 0;   // os_active_TCB is full
 }
 
+/**
+  * @brief  Create a task control block.
+  * @param  task_entry: Function name.
+  * @param  argv: Function's arguments.
+  * @retval Pointer of task control block.
+  * @retval 0 No TCB created.
+  */
 P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     P_TCB p_task;
     OS_TID task_id;
@@ -101,6 +115,12 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     return p_task;
 }
 
+/**
+  * @brief  Delete a task control block.
+  * @param  task_id: ID of a TCB.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
 int rt_tsk_delete(OS_TID task_id){
     P_TCB p_TCB;
     OS_Disable();
