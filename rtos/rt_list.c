@@ -19,11 +19,23 @@ int sch_tst = task_completed;
 
 /* Private functions ---------------------------------------------------------*/
 
+/**
+  * @brief  Insert task at the front of list.
+  * @param  list: Inserting list.
+  * @param  task: Task to be inserted.
+  * @retval None
+  */
 void rt_put_first(P_TCB *list, P_TCB task){
     task->next = *list;
     *list = task;
 }
 
+/**
+  * @brief  Insert task at the end of list.
+  * @param  list: Inserting list.
+  * @param  task: Task to be inserted.
+  * @retval None
+  */
 void rt_put_last(P_TCB *list, P_TCB task){
     P_TCB prev = 0, cur;
     for(cur = *list; cur != 0; prev = cur, cur = cur->next);
@@ -35,6 +47,11 @@ void rt_put_last(P_TCB *list, P_TCB task){
     }
 }
 
+/**
+  * @brief  Get first task on the list.
+  * @param  list: Searching list.
+  * @retval First task on the list.
+  */
 P_TCB rt_get_first(P_TCB *list){
     P_TCB task;
     task = *list;
@@ -45,6 +62,12 @@ P_TCB rt_get_first(P_TCB *list){
     return task;
 }
 
+/**
+  * @brief  Remove task from the list.
+  * @param  list: Searching list.
+  * @param  task: Task to be removed.
+  * @retval None
+  */
 void rt_rmv_task(P_TCB *list, P_TCB task){
     P_TCB prev, cur;
     if(*list == task){
@@ -61,6 +84,13 @@ void rt_rmv_task(P_TCB *list, P_TCB task){
     task->next = 0;    
 }
 
+/**
+  * @brief  Find TID from the list.
+  * @param  list: Searching list.
+  * @param  func: Function name.
+  * @retval Task id.
+  * @retval 0 No task found.
+  */
 OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
     P_TCB p_task;
     for(p_task = list; \

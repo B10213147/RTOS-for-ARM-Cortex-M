@@ -17,7 +17,6 @@
 triggerType rt_trigger;
 int rt_start_counter = 0;
 
-
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -117,6 +116,7 @@ int OS_Task_Delete(voidfuncptr task){
     OS_TID tid;
     if(os_running_tsk->function == task){
         // Delete running task
+        os_running_tsk->state = Inactive;
         tid = os_running_tsk->task_id;
         os_running_tsk = 0;
     }
@@ -125,6 +125,7 @@ int OS_Task_Delete(voidfuncptr task){
         tid = rt_find_TID(os_rdy_tasks, task);
         if(tid != 0){
             p_TCB = os_active_TCB[tid-1];
+            p_TCB->state = Inactive;
             rt_rmv_task(&os_rdy_tasks, p_TCB);
         }
     }
