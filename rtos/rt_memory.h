@@ -11,5 +11,6 @@
 #include "rt_TypeDef.h"
 
 void rt_mem_create(P_MEM pool, char *memory, unsigned int size);
+void *rt_mem_alloc(P_MEM pool, unsigned int size);
 
 #endif /* RT_MEMORY_H_ */

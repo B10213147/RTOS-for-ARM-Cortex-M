@@ -60,3 +60,34 @@ void rt_mem_create(P_MEM pool, char *memory, unsigned int size){
     rt_mem_insert_blk(&(pool->free), (P_MEMB)n_memory, \
                         size - sizeof(struct mem_blk));
 }
+
+void *rt_mem_alloc(P_MEM pool, unsigned int size){
+    P_MEMB cur, best = 0;
+    unsigned int delta = 0xffffffff;
+    
+    for(cur = pool->free; cur != 0; cur = cur->next){
+        if(cur->size >= size && \
+            cur->size <= size + sizeof(struct mem_blk)){
+            // Fit found
+            rt_mem_remove_blk(&pool->free, cur);
+            rt_mem_insert_blk(&pool->used, cur, cur->size);
+            return (char *)cur + sizeof(struct mem_blk);
+        }
+        else if(cur->size > size && delta > cur->size - size){
+            delta = cur->size - size;
+            best = cur;            
+        }
+    }
+    if(best != 0){
+        rt_mem_remove_blk(&pool->free, best);
+        rt_mem_insert_blk(&pool->free, \
+            (P_MEMB)((int)best + size + sizeof(struct mem_blk)), \
+            best->size - size - sizeof(struct mem_blk));    
+        rt_mem_insert_blk(&pool->used, best, size);    
+        return (char *)best + sizeof(struct mem_blk);
+    }
+    else{
+        // Not enough space
+        return 0;
+    }
+}
