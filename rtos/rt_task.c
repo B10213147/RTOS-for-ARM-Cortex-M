@@ -17,71 +17,12 @@
 /* Private function prototypes -----------------------------------------------*/
 void __empty(void){
 }
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv);
-int rt_tsk_delete(OS_TID task_id);
+
 
 /* Private variables ---------------------------------------------------------*/
 void *os_active_TCB[max_active_TCB];
 
 /* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Create task for RTOS.
-  * @param  task_entry: Function name.
-  * @param  argv: Function's arguments.
-  * @retval 0 Function succeeded.
-  * @retval 1 Function failed.
-  */
-int OS_Task_Create(voidfuncptr task_entry, void *argv){
-    P_TCB task;
-    task = rt_tsk_create(task_entry, argv);
-    if(task == 0){ return 1; }  // Task create failed
-    //rt_put_first(&os_rdy_tasks, task);
-    rt_put_last(&os_rdy_tasks, task);
-
-    return 0;
-}
-
-/**
-  * @brief  Delete a task in RTOS.
-  * @param  task: Function wait for deleted.
-  * @retval None
-  */
-void OS_Task_Delete(voidfuncptr task){
-    P_TCB p_TCB;
-    OS_TID tid;
-    if(os_running_tsk->function == task){
-        // Delete running task
-        tid = os_running_tsk->task_id;
-        os_running_tsk = 0;
-    }
-    else{
-        // Search ready list
-        tid = rt_find_TID(os_rdy_tasks, task);
-        if(tid != 0){
-            p_TCB = os_active_TCB[tid-1];
-            rt_rmv_task(&os_rdy_tasks, p_TCB);
-        }
-    }
-    
-    if(tid != 0){
-        rt_tsk_delete(tid);
-    }
-    /*
-    for(int i = 0; i < sch_length; i++){
-        if(os_ready_tasks[i]->function == task){   
-            p_TCB = os_ready_tasks[i];
-            for(int j = i; j < sch_length; j++){
-                // Shift the rest of os_ready_tasks[]
-                os_ready_tasks[j] = os_ready_tasks[j+1];
-            }
-            sch_length--;
-            rt_tsk_delete(p_TCB->task_id);
-            break;
-        }
-    }
-    */
-}
 
 /**
   * @brief  Get a none-occupied id from os_active_TCB

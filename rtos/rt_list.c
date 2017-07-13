@@ -15,6 +15,7 @@
 /* Private variables ---------------------------------------------------------*/
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
+int sch_tst = task_completed;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -67,4 +68,23 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
         p_task = p_task->next);
     if(p_task != 0){ return p_task->task_id; }
     else{ return 0; }
+}
+
+/**
+  * @brief  Entry of RTOS.
+  * @param  None
+  * @retval None
+  */
+void rt_sched(void){
+    if(sch_tst == task_running){ while(1); }
+    sch_tst = task_running;
+    
+    os_running_tsk = rt_get_first(&os_rdy_tasks);
+    os_running_tsk->state = Running;
+    os_running_tsk->function();
+    os_running_tsk->state = Ready;
+    rt_put_last(&os_rdy_tasks, os_running_tsk);
+    os_running_tsk = 0;
+
+    sch_tst = task_completed;
 }

@@ -19,7 +19,8 @@
 void OS_Init(uint32_t slice, triggerType source);
 void OS_Enable(void);
 void OS_Disable(void);
-
+int OS_Task_Create(voidfuncptr task_entry, void *argv);
+void OS_Task_Delete(voidfuncptr task);
 
 
 #endif /* RTOS_H_ */
