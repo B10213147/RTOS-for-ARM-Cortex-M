@@ -55,4 +55,8 @@ void rt_mem_create(P_MEM pool, char *memory, unsigned int size){
     size -= n_memory - memory;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail
 
+    pool->free = 0;
+    pool->used = 0;
+    rt_mem_insert_blk(&(pool->free), (P_MEMB)n_memory, \
+                        size - sizeof(struct mem_blk));
 }
