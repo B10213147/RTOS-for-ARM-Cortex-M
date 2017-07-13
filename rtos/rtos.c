@@ -109,9 +109,10 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
 /**
   * @brief  Delete a task in RTOS.
   * @param  task: Function wait for deleted.
-  * @retval None
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
   */
-void OS_Task_Delete(voidfuncptr task){
+int OS_Task_Delete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
     if(os_running_tsk->function == task){
@@ -128,7 +129,5 @@ void OS_Task_Delete(voidfuncptr task){
         }
     }
     
-    if(tid != 0){
-        rt_tsk_delete(tid);
-    }
+    return rt_tsk_delete(tid);
 }

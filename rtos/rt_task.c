@@ -18,7 +18,6 @@
 void __empty(void){
 }
 
-
 /* Private variables ---------------------------------------------------------*/
 void *os_active_TCB[max_active_TCB];
 
@@ -86,7 +85,9 @@ int rt_tsk_delete(OS_TID task_id){
     P_TCB p_TCB;
     OS_Disable();
     
-    if(task_id > max_active_TCB || os_active_TCB[task_id-1] == 0){
+    if(task_id == 0 || \
+        task_id > max_active_TCB || \
+        os_active_TCB[task_id-1] == 0){
         // Task not found
         OS_Enable();
         return 1;   
