@@ -9,16 +9,6 @@
 #include "rt_memory.h"
 
 /* Private typedef -----------------------------------------------------------*/
-typedef struct mem_blk{
-    struct mem_blk *next;
-    unsigned int size;
-}*P_MEMB;
-
-typedef struct mem{
-    P_MEMB free;
-    P_MEMB used;
-}*P_MEM;
-
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
@@ -57,4 +47,12 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
         prev->next = cur->next;
     }
     block->next = 0;
+}
+
+void rt_mem_create(P_MEM pool, char *memory, unsigned int size){
+    // 4-byte alignment
+    char *n_memory = (char*)(((int)memory + 0x3) & (~0x3));
+    size -= n_memory - memory;  // Remove unwanted head
+    size &= ~0x3U;  // Remove unwanted tail
+
 }

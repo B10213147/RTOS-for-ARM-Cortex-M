@@ -13,6 +13,7 @@
 #include "rt_task.h"
 #include "rt_list.h"
 #include "rt_mailbox.h"
+#include "rt_memory.h"
 
 void OS_Init(uint32_t slice, triggerType source);
 void OS_Enable(void);

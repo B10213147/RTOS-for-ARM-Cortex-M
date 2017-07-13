@@ -33,6 +33,16 @@ typedef struct OS_MCB{
     char *data;
 }*P_MCB;
 
+typedef struct mem_blk{
+    struct mem_blk *next;
+    unsigned int size;
+}*P_MEMB;
+
+typedef struct mem{
+    P_MEMB free;
+    P_MEMB used;
+}*P_MEM;
+
 typedef enum{
     CM_SysTick,
     ST_TIM6
