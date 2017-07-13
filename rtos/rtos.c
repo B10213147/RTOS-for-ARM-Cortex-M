@@ -13,12 +13,7 @@
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-void rt_sched(void);
-
 /* Private variables ---------------------------------------------------------*/
-extern int sch_length;
-int sch_tst = task_completed;
-int sch_idx = 0;
 triggerType rt_trigger;
 int rt_start_counter = 0;
 
@@ -94,16 +89,46 @@ void OS_Disable(void){
 }
 
 /**
-  * @brief  Entry of RTOS.
-  * @param  None
-  * @retval None
+  * @brief  Create task for RTOS.
+  * @param  task_entry: Function name.
+  * @param  argv: Function's arguments.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
   */
-void rt_sched(void){
-    if(sch_tst == task_running){ while(1); }
-    sch_tst = task_running;
+int OS_Task_Create(voidfuncptr task_entry, void *argv){
+    P_TCB task;
+    task = rt_tsk_create(task_entry, argv);
+    if(task == 0){ return 1; }  // Task create failed
+    //rt_put_first(&os_rdy_tasks, task);
+    rt_put_last(&os_rdy_tasks, task);
 
-    os_ready_tasks[sch_idx]->function();
+    return 0;
+}
+
+/**
+  * @brief  Delete a task in RTOS.
+  * @param  task: Function wait for deleted.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
+int OS_Task_Delete(voidfuncptr task){
+    P_TCB p_TCB;
+    OS_TID tid;
+    if(os_running_tsk->function == task){
+        // Delete running task
+        os_running_tsk->state = Inactive;
+        tid = os_running_tsk->task_id;
+        os_running_tsk = 0;
+    }
+    else{
+        // Search ready list
+        tid = rt_find_TID(os_rdy_tasks, task);
+        if(tid != 0){
+            p_TCB = os_active_TCB[tid-1];
+            p_TCB->state = Inactive;
+            rt_rmv_task(&os_rdy_tasks, p_TCB);
+        }
+    }
     
-    sch_idx = (sch_idx + 1) % sch_length;
-    sch_tst = task_completed;
+    return rt_tsk_delete(tid);
 }

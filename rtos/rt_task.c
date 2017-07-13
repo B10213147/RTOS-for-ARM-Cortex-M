@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_task.h"
 #include "rtos.h"
+#include "rt_list.h"
 #include <stdlib.h>
 
 /* Private typedef -----------------------------------------------------------*/
@@ -16,52 +17,11 @@
 /* Private function prototypes -----------------------------------------------*/
 void __empty(void){
 }
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv);
-int rt_tsk_delete(OS_TID task_id);
 
 /* Private variables ---------------------------------------------------------*/
-int sch_length = 0;
 void *os_active_TCB[max_active_TCB];
-P_TCB os_ready_tasks[max_active_TCB];
 
 /* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Create task for RTOS.
-  * @param  task_entry: Function name.
-  * @param  argv: Function's arguments.
-  * @retval 0 Function succeeded.
-  * @retval 1 Function failed.
-  */
-int OS_Task_Create(voidfuncptr task_entry, void *argv){
-    P_TCB task;
-    task = rt_tsk_create(task_entry, argv);
-    if(task == 0){ return 1; }  // Task create failed
-    os_ready_tasks[sch_length] = task;
-    sch_length++;
-    return 0;
-}
-
-/**
-  * @brief  Delete a task in RTOS.
-  * @param  task: Function wait for deleted.
-  * @retval None
-  */
-void OS_Task_Delete(voidfuncptr task){
-    P_TCB p_TCB;
-    for(int i = 0; i < sch_length; i++){
-        if(os_ready_tasks[i]->function == task){   
-            p_TCB = os_ready_tasks[i];
-            for(int j = i; j < sch_length; j++){
-                // Shift the rest of os_ready_tasks[]
-                os_ready_tasks[j] = os_ready_tasks[j+1];
-            }
-            sch_length--;
-            rt_tsk_delete(p_TCB->task_id);
-            break;
-        }
-    }
-}
 
 /**
   * @brief  Get a none-occupied id from os_active_TCB
@@ -125,7 +85,9 @@ int rt_tsk_delete(OS_TID task_id){
     P_TCB p_TCB;
     OS_Disable();
     
-    if(task_id > max_active_TCB || os_active_TCB[task_id-1] == 0){
+    if(task_id == 0 || \
+        task_id > max_active_TCB || \
+        os_active_TCB[task_id-1] == 0){
         // Task not found
         OS_Enable();
         return 1;   
