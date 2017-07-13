@@ -42,3 +42,19 @@ void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, unsigned int size){
         prev->next = block;
     }
 }
+
+void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
+    P_MEMB prev, cur;
+    if(*list == block){
+        // First in the list
+        *list = (*list)->next;
+    }
+    else{
+        // Sreach the list
+        for(prev = *list, cur = (*list)->next; \
+            cur != block && cur != 0; \
+            prev = cur, cur = cur->next);
+        prev->next = cur->next;
+    }
+    block->next = 0;
+}
