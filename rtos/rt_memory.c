@@ -15,7 +15,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, unsigned int size){
+void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, uint32_t size){
     P_MEMB prev, cur;
     block->size = size;
     if(!*list || *list > block){
@@ -51,7 +51,7 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
 
 void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
     // 4-byte alignment
-    char *n_memory = (char*)(((int)memory + 0x3) & (~0x3));
+    char *n_memory = (char*)(((uint32_t)memory + 0x3U) & (~0x3U));
     size -= n_memory - memory;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail
 
@@ -61,9 +61,9 @@ void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
                         size - sizeof(struct mem_blk));
 }
 
-void *rt_mem_alloc(P_MEM pool, unsigned int size){
+void *rt_mem_alloc(P_MEM pool, uint32_t size){
     P_MEMB cur, best = 0;
-    unsigned int delta = 0xffffffff;
+    uint32_t delta = 0xffffffff, n_block, n_size;
     
     for(cur = pool->free; cur; cur = cur->next){
         if(cur->size >= size && \
@@ -79,11 +79,15 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
         }
     }
     
-    if(best){
+    if(best){        
+        n_block = (((uint32_t)best + size + sizeof(struct mem_blk) \
+            + 0x3U) & ~0x3U);
+        // 4-byte alignment & recalculate the size
+        size = n_block - (uint32_t)best - sizeof(struct mem_blk);
+        n_size = best->size - size - sizeof(struct mem_blk);
+        
         rt_mem_remove_blk(&pool->free, best);
-        rt_mem_insert_blk(&pool->free, \
-            (P_MEMB)((int)best + size + sizeof(struct mem_blk)), \
-            best->size - size - sizeof(struct mem_blk));    
+        rt_mem_insert_blk(&pool->free, (P_MEMB)n_block, n_size);
         rt_mem_insert_blk(&pool->used, best, size);    
         return (char *)best + sizeof(struct mem_blk);
     }

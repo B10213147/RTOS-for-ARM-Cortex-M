@@ -22,7 +22,7 @@ P_MCB OS_MBX_Create(uint32_t size){
     OS_Disable();
     
     p_new = (P_MCB)rt_mem_alloc(&system_memory, sizeof(struct OS_MCB));
-    data = (char*)rt_mem_alloc(&system_memory, size);
+    data = (char *)rt_mem_alloc(&system_memory, size);
     
     if(!p_new || !data){
         rt_mem_free(&system_memory, p_new);
