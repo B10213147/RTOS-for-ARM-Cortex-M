@@ -46,23 +46,23 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
             prev = cur, cur = cur->next);
         prev->next = cur->next;
     }
-    block->next = 0;
+    block->next = NULL;
 }
 
 void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
     // 4-byte alignment
-    char *n_memory = (char*)(((uint32_t)memory + 0x3U) & (~0x3U));
-    size -= n_memory - memory;  // Remove unwanted head
+    uint32_t n_memory = ((uint32_t)memory + 0x3U) & ~0x3U;
+    size -= n_memory - (uint32_t)memory;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail
 
-    pool->free = 0;
-    pool->used = 0;
+    pool->free = NULL;
+    pool->used = NULL;
     rt_mem_insert_blk(&pool->free, (P_MEMB)n_memory, \
                         size - sizeof(struct mem_blk));
 }
 
 void *rt_mem_alloc(P_MEM pool, uint32_t size){
-    P_MEMB cur, best = 0;
+    P_MEMB cur, best = NULL;
     uint32_t delta = 0xffffffff, n_block, n_size;
     
     for(cur = pool->free; cur; cur = cur->next){
@@ -104,8 +104,8 @@ void rt_mem_free(P_MEM pool, void *ptr){
     rt_mem_remove_blk(&pool->used, block);
     rt_mem_insert_blk(&pool->free, block, block->size);
     
-    if((int)block + block->size + sizeof(struct mem_blk) == \
-        (int)block->next){
+    if((uint32_t)block + block->size + sizeof(struct mem_blk) == \
+        (uint32_t)block->next){
         // Merge lower block to a continuous space
         block->size += block->next->size + sizeof(struct mem_blk);
         rt_mem_remove_blk(&pool->free, block->next);    
@@ -113,8 +113,8 @@ void rt_mem_free(P_MEM pool, void *ptr){
     
     if(pool->free != block){
         for(cur = pool->free; cur->next != block; cur = cur->next);
-        if((int)cur + cur->size + sizeof(struct mem_blk) == \
-            (int)block){
+        if((uint32_t)cur + cur->size + sizeof(struct mem_blk) == \
+            (uint32_t)block){
             // Merge upper block to a continuous space
             cur->size += block->size + sizeof(struct mem_blk);
             rt_mem_remove_blk(&pool->free, block);    

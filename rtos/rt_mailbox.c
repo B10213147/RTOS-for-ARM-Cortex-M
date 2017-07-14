@@ -40,6 +40,13 @@ P_MCB OS_MBX_Create(uint32_t size){
     return p_new;
 }
 
+void OS_MBX_Delete(P_MCB mail){
+    OS_Disable();
+    rt_mem_free(&system_memory, mail->data);
+    rt_mem_free(&system_memory, mail);
+    OS_Enable();
+}
+
 /**
   * @brief  Read data from mailbox.
   * @param  mail: Pointer to mailbox.
