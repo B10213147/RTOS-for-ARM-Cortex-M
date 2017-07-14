@@ -10,7 +10,8 @@
 
 #include <stdint.h>
 
-typedef     uint16_t     OS_TID;
+#define     NULL        0
+typedef     uint16_t    OS_TID;
 
 typedef void (*voidfuncptr)(void);
 
@@ -29,13 +30,13 @@ typedef struct OS_TCB{
 }*P_TCB;
 
 typedef struct OS_MCB{
-    unsigned int begin, end, length;
+    uint32_t begin, end, length;
     char *data;
 }*P_MCB;
 
 typedef struct mem_blk{
     struct mem_blk *next;
-    unsigned int size;
+    uint32_t size;
 }*P_MEMB;
 
 typedef struct mem{

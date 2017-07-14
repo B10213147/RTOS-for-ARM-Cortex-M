@@ -10,8 +10,8 @@
 
 #include "rt_TypeDef.h"
 
-int OS_MBX_Read(P_MCB mail, char *data, unsigned int num_bytes);
-int OS_MBX_Write(P_MCB mail, char *data, unsigned int num_bytes);
+uint32_t OS_MBX_Read(P_MCB mail, char *data, uint32_t num_bytes);
+uint8_t OS_MBX_Write(P_MCB mail, char *data, uint32_t num_bytes);
 
 
 #endif /* RT_MAILBOX_H_ */

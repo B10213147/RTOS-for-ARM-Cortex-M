@@ -57,7 +57,7 @@ P_TCB rt_get_first(P_TCB *list){
     task = *list;
     if(task){        
         *list = (*list)->next;
-        task->next = 0;
+        task->next = NULL;
     }
     return task;
 }
@@ -81,7 +81,7 @@ void rt_rmv_task(P_TCB *list, P_TCB task){
             prev = cur, cur = cur->next);
         prev->next = cur->next;
     }
-    task->next = 0;    
+    task->next = NULL;    
 }
 
 /**
