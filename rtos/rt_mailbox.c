@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rt_mailbox.h"
+#include "rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -14,6 +15,30 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
+
+P_MCB OS_MBX_Create(uint32_t size){
+    P_MCB p_new = NULL;
+    char *data;
+    OS_Disable();
+    
+    p_new = (P_MCB)rt_mem_alloc(&system_memory, sizeof(struct OS_MCB));
+    data = (char*)rt_mem_alloc(&system_memory, size);
+    
+    if(!p_new || !data){
+        rt_mem_free(&system_memory, p_new);
+        rt_mem_free(&system_memory, data);
+        OS_Enable();
+        return NULL;
+    }
+    
+    p_new->begin = 0;
+    p_new->end = 0;
+    p_new->length = size;
+    p_new->data = data;
+    
+    OS_Enable();
+    return p_new;
+}
 
 /**
   * @brief  Read data from mailbox.
