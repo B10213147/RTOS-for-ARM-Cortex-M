@@ -91,3 +91,30 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
         return 0;
     }
 }
+
+void rt_mem_free(P_MEM pool, void *ptr){
+    P_MEMB cur, block = \
+        (P_MEMB)((char *)ptr - sizeof(struct mem_blk));
+    for(cur = pool->used; cur != 0 && cur != block; cur = cur->next);
+    if(cur == 0){ return; } // Not found
+    
+    rt_mem_remove_blk(&pool->used, block);
+    rt_mem_insert_blk(&pool->free, block, block->size);
+    
+    if((int)block + block->size + sizeof(struct mem_blk) == \
+        (int)block->next){
+        // Merge lower block to a continuous space
+        block->size += block->next->size + sizeof(struct mem_blk);
+        rt_mem_remove_blk(&pool->free, block->next);    
+    }
+    
+    if(pool->free != block){
+        for(cur = pool->free; cur->next != block; cur = cur->next);
+        if((int)cur + cur->size + sizeof(struct mem_blk) == \
+            (int)block){
+            // Merge upper block to a continuous space
+            cur->size += block->size + sizeof(struct mem_blk);
+            rt_mem_remove_blk(&pool->free, block);    
+        }
+    }
+}

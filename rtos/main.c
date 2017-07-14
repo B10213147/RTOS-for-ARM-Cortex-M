@@ -3,46 +3,39 @@
 void test1(void);
 void test2(void);
 
-char test1_Rx_buff[10];
-struct OS_MCB test1_Rx = {0, 0, 10, test1_Rx_buff};
-char test1_Tx_buff[10];
-struct OS_MCB test1_Tx = {0, 0, 10, test1_Tx_buff};
-char test2_Rx_buff[10];
-struct OS_MCB test2_Rx = {0, 0, 10, test2_Rx_buff};
-char test2_Tx_buff[10];
-struct OS_MCB test2_Tx = {0, 0, 10, test2_Tx_buff};
+char memtest[500];
+struct mem system_mem;
 int main(void){
+    /*
     OS_Init(1000, CM_SysTick);  // Time slice = 1ms
     OS_Task_Create(test1, 0);    
     OS_Task_Create(__empty, 0);
     OS_Task_Create(test2, 0);    
     OS_Task_Create(__empty, 0);
     OS_Enable();
-    
-    OS_MBX_Write(&test1_Tx, "abc", 3);
+    */
+    //rt_mem_create(0, (char*)memtest, 10);
+
+    rt_mem_create(&system_mem, memtest, 500);
+    int *a, *b;
+    a = (int*)rt_mem_alloc(&system_mem, 10 * sizeof(int));
+    b = (int*)rt_mem_alloc(&system_mem, 5 * sizeof(int));
+    rt_mem_free(&system_mem, a);
+    int *c = (int*)rt_mem_alloc(&system_mem, 5 * sizeof(int));
+    a = (int*)rt_mem_alloc(&system_mem, 10 * sizeof(int));
+    rt_mem_free(&system_mem, a);
+    rt_mem_free(&system_mem, b);
+    rt_mem_free(&system_mem, c);
     while(1){
-        char tmp[5];
-        OS_Disable();
-        OS_MBX_Read(&test1_Tx, tmp, 3);
-        OS_MBX_Write(&test2_Rx, tmp, 3);
-        OS_Enable();
-        OS_Disable();
-        OS_MBX_Read(&test2_Tx, tmp, 3);
-        OS_MBX_Write(&test1_Rx, tmp, 3);
-        OS_Enable();
-        OS_Task_Delete(__empty);
+        
+
     }
     return 0;
 }
 
 void test1(void){
-    char tmp1[5];
-    OS_Task_Create(__empty, 0);
-    OS_MBX_Read(&test1_Rx, tmp1, 3);
-    OS_MBX_Write(&test1_Tx, tmp1, 3);
+
 }
 void test2(void){
-    char tmp2[5];
-    OS_MBX_Read(&test2_Rx, tmp2, 3);
-    OS_MBX_Write(&test2_Tx, tmp2, 3);
+
 }
