@@ -4,7 +4,6 @@ void test1(void);
 void test2(void);
 
 char memtest[500];
-struct mem system_mem;
 int main(void){
     /*
     OS_Init(1000, CM_SysTick);  // Time slice = 1ms
@@ -16,16 +15,16 @@ int main(void){
     */
     //rt_mem_create(0, (char*)memtest, 10);
 
-    rt_mem_create(&system_mem, memtest, 500);
+    rt_mem_create(&system_memory, memtest, 500);
     int *a, *b;
-    a = (int*)rt_mem_alloc(&system_mem, 10 * sizeof(int));
-    b = (int*)rt_mem_alloc(&system_mem, 5 * sizeof(int));
-    rt_mem_free(&system_mem, a);
-    int *c = (int*)rt_mem_alloc(&system_mem, 5 * sizeof(int));
-    a = (int*)rt_mem_alloc(&system_mem, 10 * sizeof(int));
-    rt_mem_free(&system_mem, a);
-    rt_mem_free(&system_mem, b);
-    rt_mem_free(&system_mem, c);
+    a = (int*)rt_mem_alloc(&system_memory, 10 * sizeof(int));
+    b = (int*)rt_mem_alloc(&system_memory, 5 * sizeof(int));
+    rt_mem_free(&system_memory, a);
+    int *c = (int*)rt_mem_alloc(&system_memory, 5 * sizeof(int));
+    a = (int*)rt_mem_alloc(&system_memory, 10 * sizeof(int));
+    rt_mem_free(&system_memory, a);
+    rt_mem_free(&system_memory, b);
+    rt_mem_free(&system_memory, c);
     while(1){
         
 

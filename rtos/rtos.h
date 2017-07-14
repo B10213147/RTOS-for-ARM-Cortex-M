@@ -21,4 +21,6 @@ void OS_Disable(void);
 uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv);
 uint8_t OS_Task_Delete(voidfuncptr task);
 
+extern struct mem system_memory;
+
 #endif /* RTOS_H_ */

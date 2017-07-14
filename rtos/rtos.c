@@ -16,6 +16,7 @@
 /* Private variables ---------------------------------------------------------*/
 triggerType rt_trigger;
 int rt_start_counter = 0;
+struct mem system_memory;
 
 /* Private functions ---------------------------------------------------------*/
 

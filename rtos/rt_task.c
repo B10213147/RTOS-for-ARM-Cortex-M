@@ -9,7 +9,7 @@
 #include "rt_task.h"
 #include "rtos.h"
 #include "rt_list.h"
-#include <stdlib.h>
+#include "rt_memory.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -51,7 +51,7 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     OS_TID task_id;
     OS_Disable();
     
-    p_task = (P_TCB)malloc(sizeof(struct OS_TCB));
+    p_task = (P_TCB)rt_mem_alloc(&system_memory, sizeof(struct OS_TCB));
     if(!p_task){ 
         // Memory alloc failed
         OS_Enable();
@@ -94,7 +94,7 @@ uint8_t rt_tsk_delete(OS_TID task_id){
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
-    free(p_TCB);
+    rt_mem_free(&system_memory, p_TCB);
     
     OS_Enable();
     return 0;
