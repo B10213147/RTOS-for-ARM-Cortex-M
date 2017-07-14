@@ -15,7 +15,7 @@
 #include "rt_mailbox.h"
 #include "rt_memory.h"
 
-void OS_Init(uint32_t slice, triggerType source);
+void OS_Init(uint32_t slice, triggerType source, char *memory, uint32_t size);
 void OS_Enable(void);
 void OS_Disable(void);
 uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv);

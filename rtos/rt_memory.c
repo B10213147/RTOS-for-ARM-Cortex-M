@@ -49,7 +49,7 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
     block->next = 0;
 }
 
-void rt_mem_create(P_MEM pool, char *memory, unsigned int size){
+void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
     // 4-byte alignment
     char *n_memory = (char*)(((int)memory + 0x3) & (~0x3));
     size -= n_memory - memory;  // Remove unwanted head
