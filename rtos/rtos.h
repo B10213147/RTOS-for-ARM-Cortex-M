@@ -13,11 +13,14 @@
 #include "rt_task.h"
 #include "rt_list.h"
 #include "rt_mailbox.h"
+#include "rt_memory.h"
 
 void OS_Init(uint32_t slice, triggerType source);
 void OS_Enable(void);
 void OS_Disable(void);
-int OS_Task_Create(voidfuncptr task_entry, void *argv);
-int OS_Task_Delete(voidfuncptr task);
+uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv);
+uint8_t OS_Task_Delete(voidfuncptr task);
+
+extern struct mem system_memory;
 
 #endif /* RTOS_H_ */

@@ -22,8 +22,8 @@
   * @param  num_bytes: Number of bytes to read.
   * @retval Number of successfully read bytes.
   */
-int OS_MBX_Read(P_MCB mail, char *data, unsigned int num_bytes){
-    int i;
+uint32_t OS_MBX_Read(P_MCB mail, char *data, uint32_t num_bytes){
+    uint32_t i;
     for(i = 0; i < num_bytes; i++){
         if(mail->begin == mail->end){   
             break;   // Mailbox is empty
@@ -42,7 +42,7 @@ int OS_MBX_Read(P_MCB mail, char *data, unsigned int num_bytes){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-int OS_MBX_Write(P_MCB mail, char *data, unsigned int num_bytes){
+uint8_t OS_MBX_Write(P_MCB mail, char *data, uint32_t num_bytes){
     int diff = mail->begin - mail->end;
     if(diff <= 0){
         if(num_bytes >= mail->length + diff){

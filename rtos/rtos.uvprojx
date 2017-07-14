@@ -412,6 +412,11 @@
               <FileType>1</FileType>
               <FilePath>.\rt_mailbox.c</FilePath>
             </File>
+            <File>
+              <FileName>rt_memory.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_memory.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -846,6 +851,11 @@
               <FileName>rt_mailbox.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\rt_mailbox.c</FilePath>
+            </File>
+            <File>
+              <FileName>rt_memory.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_memory.c</FilePath>
             </File>
           </Files>
         </Group>

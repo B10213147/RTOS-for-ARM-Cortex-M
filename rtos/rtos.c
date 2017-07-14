@@ -16,6 +16,7 @@
 /* Private variables ---------------------------------------------------------*/
 triggerType rt_trigger;
 int rt_start_counter = 0;
+struct mem system_memory;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -44,7 +45,7 @@ void OS_Init(uint32_t slice, triggerType source){
     }
     // Initialize task TCB pointers to NULL.
     for(int i = 0; i < max_active_TCB; i++){
-        os_active_TCB[i] = 0;
+        os_active_TCB[i] = NULL;
     }
 }
 
@@ -95,10 +96,10 @@ void OS_Disable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-int OS_Task_Create(voidfuncptr task_entry, void *argv){
+uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv){
     P_TCB task;
     task = rt_tsk_create(task_entry, argv);
-    if(task == 0){ return 1; }  // Task create failed
+    if(!task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
     rt_put_last(&os_rdy_tasks, task);
 
@@ -111,7 +112,7 @@ int OS_Task_Create(voidfuncptr task_entry, void *argv){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-int OS_Task_Delete(voidfuncptr task){
+uint8_t OS_Task_Delete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
     if(os_running_tsk->function == task){
