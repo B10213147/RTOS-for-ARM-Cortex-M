@@ -52,7 +52,7 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     OS_Disable();
     
     p_task = (P_TCB)malloc(sizeof(struct OS_TCB));
-    if(p_task == 0){ 
+    if(!p_task){ 
         // Memory alloc failed
         OS_Enable();
         return 0; 
@@ -87,7 +87,7 @@ int rt_tsk_delete(OS_TID task_id){
     
     if(task_id == 0 || \
         task_id > max_active_TCB || \
-        os_active_TCB[task_id-1] == 0){
+        !os_active_TCB[task_id-1]){
         // Task not found
         OS_Enable();
         return 1;   

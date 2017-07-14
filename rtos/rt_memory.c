@@ -18,7 +18,7 @@
 void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, unsigned int size){
     P_MEMB prev, cur;
     block->size = size;
-    if(*list == 0 || *list > block){
+    if(!*list || *list > block){
         // Empty or lowest address
         block->next = *list;
         *list = block;
@@ -26,7 +26,7 @@ void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, unsigned int size){
     else{
         // Search the list
         for(prev = *list, cur = (*list)->next; \
-            cur != 0 && cur < block; \
+            cur && cur < block; \
             prev = cur, cur = cur->next);
         block->next = cur;
         prev->next = block;
@@ -42,7 +42,7 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
     else{
         // Sreach the list
         for(prev = *list, cur = (*list)->next; \
-            cur != block && cur != 0; \
+            cur && cur != block; \
             prev = cur, cur = cur->next);
         prev->next = cur->next;
     }
@@ -57,7 +57,7 @@ void rt_mem_create(P_MEM pool, char *memory, unsigned int size){
 
     pool->free = 0;
     pool->used = 0;
-    rt_mem_insert_blk(&(pool->free), (P_MEMB)n_memory, \
+    rt_mem_insert_blk(&pool->free, (P_MEMB)n_memory, \
                         size - sizeof(struct mem_blk));
 }
 
@@ -65,7 +65,7 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
     P_MEMB cur, best = 0;
     unsigned int delta = 0xffffffff;
     
-    for(cur = pool->free; cur != 0; cur = cur->next){
+    for(cur = pool->free; cur; cur = cur->next){
         if(cur->size >= size && \
             cur->size <= size + sizeof(struct mem_blk)){
             // Fit found
@@ -78,7 +78,8 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
             best = cur;            
         }
     }
-    if(best != 0){
+    
+    if(best){
         rt_mem_remove_blk(&pool->free, best);
         rt_mem_insert_blk(&pool->free, \
             (P_MEMB)((int)best + size + sizeof(struct mem_blk)), \
@@ -86,17 +87,15 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
         rt_mem_insert_blk(&pool->used, best, size);    
         return (char *)best + sizeof(struct mem_blk);
     }
-    else{
-        // Not enough space
-        return 0;
-    }
+    
+    return 0; // Not enough space
 }
 
 void rt_mem_free(P_MEM pool, void *ptr){
     P_MEMB cur, block = \
         (P_MEMB)((char *)ptr - sizeof(struct mem_blk));
-    for(cur = pool->used; cur != 0 && cur != block; cur = cur->next);
-    if(cur == 0){ return; } // Not found
+    for(cur = pool->used; cur && cur != block; cur = cur->next);
+    if(!cur){ return; } // Not found
     
     rt_mem_remove_blk(&pool->used, block);
     rt_mem_insert_blk(&pool->free, block, block->size);

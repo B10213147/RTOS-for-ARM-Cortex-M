@@ -98,7 +98,7 @@ void OS_Disable(void){
 int OS_Task_Create(voidfuncptr task_entry, void *argv){
     P_TCB task;
     task = rt_tsk_create(task_entry, argv);
-    if(task == 0){ return 1; }  // Task create failed
+    if(!task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
     rt_put_last(&os_rdy_tasks, task);
 
