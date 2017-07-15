@@ -16,6 +16,11 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+/**
+  * @brief  Create a mailbox.
+  * @param  size: Size in byte.
+  * @retval Pointer to mailbox.
+  */
 P_MCB OS_MBX_Create(uint32_t size){
     P_MCB p_new = NULL;
     char *data;
@@ -40,6 +45,11 @@ P_MCB OS_MBX_Create(uint32_t size){
     return p_new;
 }
 
+/**
+  * @brief  Delete mailbox.
+  * @param  mail: Pointer to mailbox.
+  * @retval None
+  */
 void OS_MBX_Delete(P_MCB mail){
     OS_Disable();
     rt_mem_free(&system_memory, mail->data);

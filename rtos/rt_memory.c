@@ -15,6 +15,13 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+/**
+  * @brief  Insert a block into the list.
+  * @param  list: Memory link list.
+  * @param  block: Block wait for remove.
+  * @param  size: Size in byte.
+  * @retval None
+  */
 void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, uint32_t size){
     P_MEMB prev, cur;
     block->size = size;
@@ -33,6 +40,12 @@ void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, uint32_t size){
     }
 }
 
+/**
+  * @brief  Remove a block from the list.
+  * @param  list: Memory link list.
+  * @param  block: Block wait for remove.
+  * @retval None
+  */
 void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
     P_MEMB prev, cur;
     if(*list == block){
@@ -49,6 +62,13 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
     block->next = NULL;
 }
 
+/**
+  * @brief  Create a memory pool.
+  * @param  pool: Pointer to memory pool.
+  * @param  memory: Pointer to memory.
+  * @param  size: Size in byte.
+  * @retval None
+  */
 void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
     // 4-byte alignment
     uint32_t n_memory = ((uint32_t)memory + 0x3U) & ~0x3U;
@@ -61,6 +81,12 @@ void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
                         size - sizeof(struct mem_blk));
 }
 
+/**
+  * @brief  Allocate memory space.
+  * @param  pool: Pointer to memory pool.
+  * @param  size: Size in byte.
+  * @retval Pointer to allocated memory.
+  */
 void *rt_mem_alloc(P_MEM pool, uint32_t size){
     P_MEMB cur, best = NULL;
     uint32_t delta = 0xffffffff, n_block, n_size;
@@ -95,6 +121,12 @@ void *rt_mem_alloc(P_MEM pool, uint32_t size){
     return 0; // Not enough space
 }
 
+/**
+  * @brief  Free memory space.
+  * @param  pool: Pointer to memory pool.
+  * @param  ptr: Pointer to allocated memory.
+  * @retval None
+  */
 void rt_mem_free(P_MEM pool, void *ptr){
     P_MEMB cur, block = \
         (P_MEMB)((char *)ptr - sizeof(struct mem_blk));
