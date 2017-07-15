@@ -10,6 +10,8 @@
 
 #include "rt_TypeDef.h"
 
+P_MCB OS_MBX_Create(uint32_t size);
+void OS_MBX_Delete(P_MCB mail);
 uint32_t OS_MBX_Read(P_MCB mail, char *data, uint32_t num_bytes);
 uint8_t OS_MBX_Write(P_MCB mail, char *data, uint32_t num_bytes);
 
