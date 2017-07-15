@@ -43,6 +43,7 @@ OS_TID rt_get_TID(void){
   * @brief  Create a task control block.
   * @param  task_entry: Function name.
   * @param  argv: Function's arguments.
+  * @param  interval: Number of timeslices in which the task is scheduled once.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
