@@ -27,12 +27,14 @@ typedef struct OS_TCB{
     struct OS_TCB *next;
 	voidfuncptr function;
 	void *arg;
+    int interval;
+    int remain_ticks;
 }*P_TCB;
 
-typedef struct OS_MCB{
+typedef struct mail_blk{
     uint32_t begin, end, length;
     char *data;
-}*P_MCB;
+}*P_MAIL;
 
 typedef struct mem_blk{
     struct mem_blk *next;

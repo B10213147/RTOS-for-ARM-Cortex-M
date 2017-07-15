@@ -43,35 +43,38 @@ OS_TID rt_get_TID(void){
   * @brief  Create a task control block.
   * @param  task_entry: Function name.
   * @param  argv: Function's arguments.
+  * @param  interval: Number of timeslices in which the task is scheduled once.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
+P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval){
     P_TCB p_task;
     OS_TID task_id;
-    OS_Disable();
+    OSDisable();
     
     p_task = (P_TCB)rt_mem_alloc(&system_memory, sizeof(struct OS_TCB));
     if(!p_task){ 
         // Memory alloc failed
-        OS_Enable();
+        OSEnable();
         return NULL; 
     }   
     p_task->function = task_entry;
     p_task->arg = argv;
     p_task->state = Ready;
     p_task->next = NULL;
+    p_task->interval = interval;
+    p_task->remain_ticks = interval;
     
     task_id = rt_get_TID();
     if(task_id == 0){ 
         // Task create failed
-        OS_Enable();
+        OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
     
-    OS_Enable();    
+    OSEnable();    
     return p_task;
 }
 
@@ -83,19 +86,19 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
   */
 uint8_t rt_tsk_delete(OS_TID task_id){
     P_TCB p_TCB;
-    OS_Disable();
+    OSDisable();
     
     if(task_id == 0 || \
         task_id > max_active_TCB || \
         !os_active_TCB[task_id-1]){
         // Task not found
-        OS_Enable();
+        OSEnable();
         return 1;   
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
     rt_mem_free(&system_memory, p_TCB);
     
-    OS_Enable();
+    OSEnable();
     return 0;
 }
