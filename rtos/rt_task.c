@@ -46,7 +46,7 @@ OS_TID rt_get_TID(void){
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
+P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval){
     P_TCB p_task;
     OS_TID task_id;
     OSDisable();
@@ -61,6 +61,8 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     p_task->arg = argv;
     p_task->state = Ready;
     p_task->next = NULL;
+    p_task->interval = interval;
+    p_task->remain_ticks = interval;
     
     task_id = rt_get_TID();
     if(task_id == 0){ 

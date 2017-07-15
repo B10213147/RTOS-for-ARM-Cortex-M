@@ -100,7 +100,7 @@ void OSDisable(void){
   */
 uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv){
     P_TCB task;
-    task = rt_tsk_create(task_entry, argv);
+    task = rt_tsk_create(task_entry, argv, 0);
     if(!task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
     rt_put_last(&os_rdy_tasks, task);

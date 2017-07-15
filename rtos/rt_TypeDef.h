@@ -27,6 +27,8 @@ typedef struct OS_TCB{
     struct OS_TCB *next;
 	voidfuncptr function;
 	void *arg;
+    int interval;
+    int remain_ticks;
 }*P_TCB;
 
 typedef struct mail_blk{
