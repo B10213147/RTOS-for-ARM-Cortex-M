@@ -82,6 +82,16 @@ void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
 }
 
 /**
+  * @brief  Delete a memory pool.
+  * @param  pool: Pointer to memory pool.
+  * @retval None
+  */
+void rt_mem_delete(P_MEM pool){
+    pool->free = NULL;
+    pool->used = NULL;
+}
+
+/**
   * @brief  Allocate memory space.
   * @param  pool: Pointer to memory pool.
   * @param  size: Size in byte.
