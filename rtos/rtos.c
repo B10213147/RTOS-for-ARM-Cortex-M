@@ -29,7 +29,7 @@ struct mem system_memory;
   *     @arg ST_TIM6
   * @retval None
   */
-void OS_Init(uint32_t slice, triggerType source){
+void OS_Init(uint32_t slice, triggerType source, char *memory, uint32_t size){
     uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
     rt_trigger = source;
     switch(rt_trigger){
@@ -47,6 +47,8 @@ void OS_Init(uint32_t slice, triggerType source){
     for(int i = 0; i < max_active_TCB; i++){
         os_active_TCB[i] = NULL;
     }
+    
+    rt_mem_create(&system_memory, memory, size);
 }
 
 /**

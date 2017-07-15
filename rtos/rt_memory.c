@@ -15,7 +15,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, unsigned int size){
+/**
+  * @brief  Insert a block into the list.
+  * @param  list: Memory link list.
+  * @param  block: Block wait for remove.
+  * @param  size: Size in byte.
+  * @retval None
+  */
+void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, uint32_t size){
     P_MEMB prev, cur;
     block->size = size;
     if(!*list || *list > block){
@@ -33,6 +40,12 @@ void rt_mem_insert_blk(P_MEMB *list, P_MEMB block, unsigned int size){
     }
 }
 
+/**
+  * @brief  Remove a block from the list.
+  * @param  list: Memory link list.
+  * @param  block: Block wait for remove.
+  * @retval None
+  */
 void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
     P_MEMB prev, cur;
     if(*list == block){
@@ -46,24 +59,37 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
             prev = cur, cur = cur->next);
         prev->next = cur->next;
     }
-    block->next = 0;
+    block->next = NULL;
 }
 
-void rt_mem_create(P_MEM pool, char *memory, unsigned int size){
+/**
+  * @brief  Create a memory pool.
+  * @param  pool: Pointer to memory pool.
+  * @param  memory: Pointer to memory.
+  * @param  size: Size in byte.
+  * @retval None
+  */
+void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
     // 4-byte alignment
-    char *n_memory = (char*)(((int)memory + 0x3) & (~0x3));
-    size -= n_memory - memory;  // Remove unwanted head
+    uint32_t n_memory = ((uint32_t)memory + 0x3U) & ~0x3U;
+    size -= n_memory - (uint32_t)memory;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail
 
-    pool->free = 0;
-    pool->used = 0;
+    pool->free = NULL;
+    pool->used = NULL;
     rt_mem_insert_blk(&pool->free, (P_MEMB)n_memory, \
                         size - sizeof(struct mem_blk));
 }
 
-void *rt_mem_alloc(P_MEM pool, unsigned int size){
-    P_MEMB cur, best = 0;
-    unsigned int delta = 0xffffffff;
+/**
+  * @brief  Allocate memory space.
+  * @param  pool: Pointer to memory pool.
+  * @param  size: Size in byte.
+  * @retval Pointer to allocated memory.
+  */
+void *rt_mem_alloc(P_MEM pool, uint32_t size){
+    P_MEMB cur, best = NULL;
+    uint32_t delta = 0xffffffff, n_block, n_size;
     
     for(cur = pool->free; cur; cur = cur->next){
         if(cur->size >= size && \
@@ -79,11 +105,15 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
         }
     }
     
-    if(best){
+    if(best){        
+        n_block = (((uint32_t)best + size + sizeof(struct mem_blk) \
+            + 0x3U) & ~0x3U);
+        // 4-byte alignment & recalculate the size
+        size = n_block - (uint32_t)best - sizeof(struct mem_blk);
+        n_size = best->size - size - sizeof(struct mem_blk);
+        
         rt_mem_remove_blk(&pool->free, best);
-        rt_mem_insert_blk(&pool->free, \
-            (P_MEMB)((int)best + size + sizeof(struct mem_blk)), \
-            best->size - size - sizeof(struct mem_blk));    
+        rt_mem_insert_blk(&pool->free, (P_MEMB)n_block, n_size);
         rt_mem_insert_blk(&pool->used, best, size);    
         return (char *)best + sizeof(struct mem_blk);
     }
@@ -91,6 +121,12 @@ void *rt_mem_alloc(P_MEM pool, unsigned int size){
     return 0; // Not enough space
 }
 
+/**
+  * @brief  Free memory space.
+  * @param  pool: Pointer to memory pool.
+  * @param  ptr: Pointer to allocated memory.
+  * @retval None
+  */
 void rt_mem_free(P_MEM pool, void *ptr){
     P_MEMB cur, block = \
         (P_MEMB)((char *)ptr - sizeof(struct mem_blk));
@@ -100,8 +136,8 @@ void rt_mem_free(P_MEM pool, void *ptr){
     rt_mem_remove_blk(&pool->used, block);
     rt_mem_insert_blk(&pool->free, block, block->size);
     
-    if((int)block + block->size + sizeof(struct mem_blk) == \
-        (int)block->next){
+    if((uint32_t)block + block->size + sizeof(struct mem_blk) == \
+        (uint32_t)block->next){
         // Merge lower block to a continuous space
         block->size += block->next->size + sizeof(struct mem_blk);
         rt_mem_remove_blk(&pool->free, block->next);    
@@ -109,8 +145,8 @@ void rt_mem_free(P_MEM pool, void *ptr){
     
     if(pool->free != block){
         for(cur = pool->free; cur->next != block; cur = cur->next);
-        if((int)cur + cur->size + sizeof(struct mem_blk) == \
-            (int)block){
+        if((uint32_t)cur + cur->size + sizeof(struct mem_blk) == \
+            (uint32_t)block){
             // Merge upper block to a continuous space
             cur->size += block->size + sizeof(struct mem_blk);
             rt_mem_remove_blk(&pool->free, block);    
