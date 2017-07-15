@@ -29,7 +29,7 @@ struct mem system_memory;
   *     @arg ST_TIM6
   * @retval None
   */
-void OS_Init(uint32_t slice, triggerType source, char *memory, uint32_t size){
+void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
     rt_trigger = source;
     switch(rt_trigger){
@@ -56,7 +56,7 @@ void OS_Init(uint32_t slice, triggerType source, char *memory, uint32_t size){
   * @param  None
   * @retval None
   */
-void OS_Enable(void){
+void OSEnable(void){
     rt_start_counter++;
     if(rt_start_counter > 0){
         switch(rt_trigger){
@@ -77,7 +77,7 @@ void OS_Enable(void){
   * @param  None
   * @retval None
   */
-void OS_Disable(void){
+void OSDisable(void){
     rt_start_counter--;
     switch(rt_trigger){
     case CM_SysTick:
@@ -98,7 +98,7 @@ void OS_Disable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv){
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv){
     P_TCB task;
     task = rt_tsk_create(task_entry, argv);
     if(!task){ return 1; }  // Task create failed
@@ -114,7 +114,7 @@ uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OS_Task_Delete(voidfuncptr task){
+uint8_t OSTaskDelete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
     if(os_running_tsk->function == task){

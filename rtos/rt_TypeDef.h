@@ -29,10 +29,10 @@ typedef struct OS_TCB{
 	void *arg;
 }*P_TCB;
 
-typedef struct OS_MCB{
+typedef struct mail_blk{
     uint32_t begin, end, length;
     char *data;
-}*P_MCB;
+}*P_MAIL;
 
 typedef struct mem_blk{
     struct mem_blk *next;

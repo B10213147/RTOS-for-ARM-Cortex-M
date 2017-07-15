@@ -21,18 +21,18 @@
   * @param  size: Size in byte.
   * @retval Pointer to mailbox.
   */
-P_MCB OS_MBX_Create(uint32_t size){
-    P_MCB p_new = NULL;
+P_MAIL rt_mail_create(uint32_t size){
+    P_MAIL p_new = NULL;
     char *data;
-    OS_Disable();
+    OSDisable();
     
-    p_new = (P_MCB)rt_mem_alloc(&system_memory, sizeof(struct OS_MCB));
+    p_new = (P_MAIL)rt_mem_alloc(&system_memory, sizeof(struct mail_blk));
     data = (char *)rt_mem_alloc(&system_memory, size);
     
     if(!p_new || !data){
         rt_mem_free(&system_memory, p_new);
         rt_mem_free(&system_memory, data);
-        OS_Enable();
+        OSEnable();
         return NULL;
     }
     
@@ -41,7 +41,7 @@ P_MCB OS_MBX_Create(uint32_t size){
     p_new->length = size;
     p_new->data = data;
     
-    OS_Enable();
+    OSEnable();
     return p_new;
 }
 
@@ -50,11 +50,11 @@ P_MCB OS_MBX_Create(uint32_t size){
   * @param  mail: Pointer to mailbox.
   * @retval None
   */
-void OS_MBX_Delete(P_MCB mail){
-    OS_Disable();
+void rt_mail_delete(P_MAIL mail){
+    OSDisable();
     rt_mem_free(&system_memory, mail->data);
     rt_mem_free(&system_memory, mail);
-    OS_Enable();
+    OSEnable();
 }
 
 /**
@@ -64,7 +64,7 @@ void OS_MBX_Delete(P_MCB mail){
   * @param  num_bytes: Number of bytes to read.
   * @retval Number of successfully read bytes.
   */
-uint32_t OS_MBX_Read(P_MCB mail, char *data, uint32_t num_bytes){
+uint32_t rt_mail_read(P_MAIL mail, char *data, uint32_t num_bytes){
     uint32_t i;
     for(i = 0; i < num_bytes; i++){
         if(mail->begin == mail->end){   
@@ -84,7 +84,7 @@ uint32_t OS_MBX_Read(P_MCB mail, char *data, uint32_t num_bytes){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OS_MBX_Write(P_MCB mail, char *data, uint32_t num_bytes){
+uint8_t rt_mail_write(P_MAIL mail, char *data, uint32_t num_bytes){
     int diff = mail->begin - mail->end;
     if(diff <= 0){
         if(num_bytes >= mail->length + diff){

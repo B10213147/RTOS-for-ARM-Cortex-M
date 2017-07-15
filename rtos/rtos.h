@@ -15,11 +15,11 @@
 #include "rt_mailbox.h"
 #include "rt_memory.h"
 
-void OS_Init(uint32_t slice, triggerType source, char *memory, uint32_t size);
-void OS_Enable(void);
-void OS_Disable(void);
-uint8_t OS_Task_Create(voidfuncptr task_entry, void *argv);
-uint8_t OS_Task_Delete(voidfuncptr task);
+void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
+void OSEnable(void);
+void OSDisable(void);
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv);
+uint8_t OSTaskDelete(voidfuncptr task);
 
 extern struct mem system_memory;
 

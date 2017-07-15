@@ -49,12 +49,12 @@ OS_TID rt_get_TID(void){
 P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     P_TCB p_task;
     OS_TID task_id;
-    OS_Disable();
+    OSDisable();
     
     p_task = (P_TCB)rt_mem_alloc(&system_memory, sizeof(struct OS_TCB));
     if(!p_task){ 
         // Memory alloc failed
-        OS_Enable();
+        OSEnable();
         return NULL; 
     }   
     p_task->function = task_entry;
@@ -65,13 +65,13 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
     task_id = rt_get_TID();
     if(task_id == 0){ 
         // Task create failed
-        OS_Enable();
+        OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
     
-    OS_Enable();    
+    OSEnable();    
     return p_task;
 }
 
@@ -83,19 +83,19 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv){
   */
 uint8_t rt_tsk_delete(OS_TID task_id){
     P_TCB p_TCB;
-    OS_Disable();
+    OSDisable();
     
     if(task_id == 0 || \
         task_id > max_active_TCB || \
         !os_active_TCB[task_id-1]){
         // Task not found
-        OS_Enable();
+        OSEnable();
         return 1;   
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
     rt_mem_free(&system_memory, p_TCB);
     
-    OS_Enable();
+    OSEnable();
     return 0;
 }
