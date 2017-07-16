@@ -95,15 +95,22 @@ void OSDisable(void){
   * @brief  Create task for RTOS.
   * @param  task_entry: Function name.
   * @param  argv: Function's arguments.
+  * @param  interval: Number of timeslices in which the task is scheduled once.
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv){
-    P_TCB task;
-    task = rt_tsk_create(task_entry, argv, 0);
-    if(!task){ return 1; }  // Task create failed
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval){
+    struct OS_TCB task;
+    P_TCB n_task;
+    
+    task.function = task_entry;
+    task.arg = argv;
+    task.interval = interval;
+    
+    n_task = rt_tsk_create(&task);
+    if(!n_task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
-    rt_put_last(&os_rdy_tasks, task);
+    rt_put_last(&os_rdy_tasks, n_task);
 
     return 0;
 }

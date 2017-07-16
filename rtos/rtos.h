@@ -18,7 +18,7 @@
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
 void OSEnable(void);
 void OSDisable(void);
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv);
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval);
 uint8_t OSTaskDelete(voidfuncptr task);
 
 extern struct mem system_memory;

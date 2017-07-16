@@ -11,14 +11,14 @@ char memtest[500];
 
 int main(void){
     OSInit(1000, CM_SysTick, memtest, 500);  // Time slice = 1ms
-    OSTaskCreate(test1, 0);  
+    OSTaskCreate(test1, 0, 0);  
     Rx1 = rt_mail_create(10);
     Tx1 = rt_mail_create(13);
-    OSTaskCreate(__empty, 0);
-    OSTaskCreate(test2, 0);   
+    OSTaskCreate(__empty, 0, 0);
+    OSTaskCreate(test2, 0, 0);   
     Rx2 = rt_mail_create(12);
     Tx2 = rt_mail_create(11);
-    OSTaskCreate(__empty, 0);
+    OSTaskCreate(__empty, 0, 0);
     OSEnable();
     
     rt_mail_write(Rx1, "Hello", 5);
