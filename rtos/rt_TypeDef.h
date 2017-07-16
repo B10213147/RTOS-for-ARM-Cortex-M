@@ -31,6 +31,11 @@ typedef struct OS_TCB{
     int remain_ticks;
 }*P_TCB;
 
+typedef struct task_list{
+    struct OS_TCB *task;
+    struct task_list *next;
+}*P_LIST;
+
 typedef struct mail_blk{
     uint32_t begin, end, length;
     char *data;

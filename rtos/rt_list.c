@@ -7,6 +7,8 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rt_list.h"
+#include "rtos.h"
+//#include "rt_memory.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -98,6 +100,45 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
         p_task = p_task->next);
     if(p_task != 0){ return p_task->task_id; }
     else{ return 0; }
+}
+
+P_LIST rt_list_updated(void){
+    P_TCB task;
+    P_LIST another, prev, cur, list = NULL;
+    for(task = os_rdy_tasks; task; task = task->next){
+        task->remain_ticks--;
+        if(task->remain_ticks > 0){
+
+        }
+        else{
+            // Another ready to be scheduled task
+            another = (P_LIST)rt_mem_alloc( \
+                        &system_memory, sizeof(struct task_list));
+            another->task = task;
+            another->next = NULL;
+            
+            for(prev = 0, cur = list; cur; prev = cur, cur = cur->next){
+                if(task->remain_ticks < cur->task->remain_ticks){
+                    if(prev){ prev->next = another; }
+                    else{ list = another; }
+                    another->next = cur;
+                    break;
+                }
+            }
+
+            if(!cur){
+                if(prev){
+                    // Reach the last of the list
+                    prev->next = another;
+                }
+                else{
+                    // List is empty
+                    list = another;
+                }
+            } 
+        }
+    }
+    return list;
 }
 
 /**

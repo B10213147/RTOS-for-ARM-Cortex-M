@@ -41,7 +41,7 @@ OS_TID rt_get_TID(void){
 
 /**
   * @brief  Create a task control block.
-  * @param  task: Pointer of waiting created task control block.
+  * @param  task: Pointer of waiting created task.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
