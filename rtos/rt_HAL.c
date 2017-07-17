@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rt_HAL.h"
+#include "rt_list.h"
 #include "stm32f0xx.h"                  // Device header
 
 /* Private typedef -----------------------------------------------------------*/
@@ -17,7 +18,6 @@ void SysTick_Handler(void);
 void TIM6_DAC_IRQHandler(void);
 void ST_Blink(void);
 void TI_Blink(void);
-extern void rt_sched(void);
 
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/

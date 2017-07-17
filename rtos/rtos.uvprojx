@@ -132,12 +132,12 @@
             <UseExternalTool>0</UseExternalTool>
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
-            <Capability>0</Capability>
-            <DriverSelection>-1</DriverSelection>
+            <Capability>1</Capability>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -397,6 +397,11 @@
               <FileType>1</FileType>
               <FilePath>.\rt_task.c</FilePath>
             </File>
+            <File>
+              <FileName>rt_list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_list.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -406,6 +411,11 @@
               <FileName>rt_mailbox.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\rt_mailbox.c</FilePath>
+            </File>
+            <File>
+              <FileName>rt_memory.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_memory.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -827,6 +837,11 @@
               <FileType>1</FileType>
               <FilePath>.\rt_task.c</FilePath>
             </File>
+            <File>
+              <FileName>rt_list.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_list.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -836,6 +851,11 @@
               <FileName>rt_mailbox.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\rt_mailbox.c</FilePath>
+            </File>
+            <File>
+              <FileName>rt_memory.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_memory.c</FilePath>
             </File>
           </Files>
         </Group>
