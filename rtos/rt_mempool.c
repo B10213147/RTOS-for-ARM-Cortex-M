@@ -47,3 +47,16 @@ void rt_pool_distroy(P_POOL pool){
     rt_mem_free(&system_memory, pool);
     OSEnable();
 }
+
+void *rt_pool_alloc(P_POOL pool){
+    int free_id;
+    char *mem = NULL;
+    for(free_id = 0; free_id < pool->blocks; free_id++){
+        if(pool->active_id[free_id]){ break; }
+    }
+    if(free_id < pool->blocks){
+        pool->active_id[free_id] = 1;
+        mem = pool->pool + free_id * pool->size;
+    }
+    return mem;
+}
