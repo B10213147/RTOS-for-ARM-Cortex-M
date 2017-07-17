@@ -60,3 +60,13 @@ void *rt_pool_alloc(P_POOL pool){
     }
     return mem;
 }
+
+void rt_pool_free(P_POOL pool, void *ptr){
+    int id;
+    OSDisable();
+    id = ((uint32_t)ptr - (uint32_t)pool->pool) / pool->size;
+    if(id >= 0 && id < pool->blocks){
+        pool->active_id[id] = 0;
+    }
+    OSEnable();
+}
