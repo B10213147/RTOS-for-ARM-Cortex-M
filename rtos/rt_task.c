@@ -47,7 +47,7 @@ P_TCB rt_tsk_create(P_TCB task){
     OS_TID task_id;
     OSDisable();
     
-    p_task = (P_TCB)rt_mem_alloc(&system_memory, sizeof(struct OS_TCB));
+    p_task = (P_TCB)rt_pool_alloc(task_pool);
     if(!p_task){ 
         // Memory alloc failed
         OSEnable();
@@ -92,7 +92,7 @@ uint8_t rt_tsk_delete(OS_TID task_id){
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
-    rt_mem_free(&system_memory, p_TCB);
+    rt_pool_free(task_pool, p_TCB);
     
     OSEnable();
     return 0;
