@@ -8,7 +8,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_list.h"
 #include "rtos.h"
-//#include "rt_memory.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -102,6 +101,12 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
     else{ return 0; }
 }
 
+/**
+  * @brief  Updated a whole list ready to be excecuted.
+  * @param  None
+  * @retval Scheduled list.
+  * @retval 0 No list created.
+  */
 P_LIST rt_list_updated(void){
     P_TCB task;
     P_LIST another, prev, cur, list = NULL;
@@ -141,6 +146,12 @@ P_LIST rt_list_updated(void){
     return list;
 }
 
+/**
+  * @brief  Remove first item in the scheduled list.
+  * @param  list: Scheduled list.
+  * @retval Task.
+  * @retval 0 No task has been scheduled.
+  */
 P_TCB rt_rmv_list(P_LIST *list){
     P_TCB task = NULL;
     if(*list){
@@ -159,17 +170,17 @@ P_TCB rt_rmv_list(P_LIST *list){
 void rt_sched(void){
     static P_LIST list = NULL;
     if(sch_tst == task_running){ while(1); }
-    sch_tst = task_running;
-    
     while(list){ rt_rmv_list(&list); }
     list = rt_list_updated();
-    
-    os_running_tsk = rt_rmv_list(&list);
-    os_running_tsk->state = Running;
-    os_running_tsk->function();
-    os_running_tsk->state = Ready;
-    os_running_tsk->remain_ticks += os_running_tsk->interval;
-    os_running_tsk = 0;
-
+    if(list){
+        sch_tst = task_running;
+        
+        os_running_tsk = rt_rmv_list(&list);
+        os_running_tsk->state = Running;
+        os_running_tsk->function();
+        os_running_tsk->state = Ready;
+        os_running_tsk->remain_ticks += os_running_tsk->interval;
+        os_running_tsk = 0;
+    }
     sch_tst = task_completed;
 }
