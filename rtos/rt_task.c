@@ -15,9 +15,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-void __empty(void){
-}
-
 /* Private variables ---------------------------------------------------------*/
 void *os_active_TCB[max_active_TCB];
 
@@ -41,13 +38,11 @@ OS_TID rt_get_TID(void){
 
 /**
   * @brief  Create a task control block.
-  * @param  task_entry: Function name.
-  * @param  argv: Function's arguments.
-  * @param  interval: Number of timeslices in which the task is scheduled once.
+  * @param  task: Pointer of waiting created task.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval){
+P_TCB rt_tsk_create(P_TCB task){
     P_TCB p_task;
     OS_TID task_id;
     OSDisable();
@@ -58,12 +53,12 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval){
         OSEnable();
         return NULL; 
     }   
-    p_task->function = task_entry;
-    p_task->arg = argv;
+    p_task->function = task->function;
+    p_task->arg = task->arg;
     p_task->state = Ready;
     p_task->next = NULL;
-    p_task->interval = interval;
-    p_task->remain_ticks = interval;
+    p_task->interval = task->interval;
+    p_task->remain_ticks = task->interval;
     
     task_id = rt_get_TID();
     if(task_id == 0){ 
