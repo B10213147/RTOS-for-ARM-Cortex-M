@@ -145,6 +145,7 @@ P_TCB rt_rmv_list(P_LIST *list){
     P_TCB task = NULL;
     if(*list){
         task = (*list)->task;
+        rt_mem_free(&system_memory, *list);
         *list = (*list)->next;
     }
     return task;
@@ -156,14 +157,18 @@ P_TCB rt_rmv_list(P_LIST *list){
   * @retval None
   */
 void rt_sched(void){
+    static P_LIST list = NULL;
     if(sch_tst == task_running){ while(1); }
     sch_tst = task_running;
     
-    os_running_tsk = rt_get_first(&os_rdy_tasks);
+    while(list){ rt_rmv_list(&list); }
+    list = rt_list_updated();
+    
+    os_running_tsk = rt_rmv_list(&list);
     os_running_tsk->state = Running;
     os_running_tsk->function();
     os_running_tsk->state = Ready;
-    rt_put_last(&os_rdy_tasks, os_running_tsk);
+    os_running_tsk->remain_ticks += os_running_tsk->interval;
     os_running_tsk = 0;
 
     sch_tst = task_completed;
