@@ -15,6 +15,8 @@
 #include "rt_mailbox.h"
 #include "rt_memory.h"
 
+#define     max_active_TCB      32
+
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
 void OSEnable(void);
 void OSDisable(void);
