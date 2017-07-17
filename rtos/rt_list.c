@@ -141,6 +141,15 @@ P_LIST rt_list_updated(void){
     return list;
 }
 
+P_TCB rt_rmv_list(P_LIST *list){
+    P_TCB task = NULL;
+    if(*list){
+        task = (*list)->task;
+        *list = (*list)->next;
+    }
+    return task;
+}
+
 /**
   * @brief  Entry of RTOS.
   * @param  None
