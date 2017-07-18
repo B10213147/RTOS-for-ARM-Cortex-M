@@ -417,6 +417,11 @@
               <FileType>1</FileType>
               <FilePath>.\rt_memory.c</FilePath>
             </File>
+            <File>
+              <FileName>rt_mempool.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_mempool.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -856,6 +861,11 @@
               <FileName>rt_memory.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\rt_memory.c</FilePath>
+            </File>
+            <File>
+              <FileName>rt_mempool.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\rt_mempool.c</FilePath>
             </File>
           </Files>
         </Group>

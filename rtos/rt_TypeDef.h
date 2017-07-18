@@ -51,6 +51,13 @@ typedef struct mem{
     P_MEMB used;
 }*P_MEM;
 
+typedef struct mempool{
+    char *active_id;
+    char *pool;
+    uint32_t size;
+    uint32_t blocks;
+}*P_POOL;
+
 typedef enum{
     CM_SysTick,
     ST_TIM6

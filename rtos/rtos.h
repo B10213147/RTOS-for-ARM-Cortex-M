@@ -14,6 +14,9 @@
 #include "rt_list.h"
 #include "rt_mailbox.h"
 #include "rt_memory.h"
+#include "rt_mempool.h"
+
+#define     max_active_TCB      32
 
 #define     max_active_TCB      32
 
@@ -24,5 +27,7 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval);
 uint8_t OSTaskDelete(voidfuncptr task);
 
 extern struct mem system_memory;
+extern P_POOL task_pool;
+extern P_POOL list_pool;
 
 #endif /* RTOS_H_ */

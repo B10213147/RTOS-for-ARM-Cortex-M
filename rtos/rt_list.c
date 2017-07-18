@@ -117,8 +117,7 @@ P_LIST rt_list_updated(void){
         }
         else{
             // Another ready to be scheduled task
-            another = (P_LIST)rt_mem_alloc( \
-                        &system_memory, sizeof(struct task_list));
+            another = (P_LIST)rt_pool_alloc(list_pool);
             another->task = task;
             another->next = NULL;
             
@@ -156,7 +155,7 @@ P_TCB rt_rmv_list(P_LIST *list){
     P_TCB task = NULL;
     if(*list){
         task = (*list)->task;
-        rt_mem_free(&system_memory, *list);
+        rt_pool_free(list_pool, *list);
         *list = (*list)->next;
     }
     return task;

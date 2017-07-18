@@ -17,6 +17,8 @@
 triggerType rt_trigger;
 int rt_start_counter = 0;
 struct mem system_memory;
+P_POOL task_pool;
+P_POOL list_pool;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -49,6 +51,9 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     }
     
     rt_mem_create(&system_memory, memory, size);
+    task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
+    list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
+    while(!task_pool || !list_pool);    // Not enough space in system_memory
 }
 
 /**
