@@ -17,6 +17,13 @@
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+/**
+  * @brief  Create a memory pool
+  * @param  size: Size of each block in byte.
+  * @param  blocks: Number of block.
+  * @retval Pointer to the created memory pool.
+  * @retval 0 No memory pool created.
+  */
 P_POOL rt_pool_create(uint32_t size, uint32_t blocks){
     P_POOL pool;
     OSDisable();
@@ -42,12 +49,22 @@ P_POOL rt_pool_create(uint32_t size, uint32_t blocks){
     return pool;
 }
 
+/**
+  * @brief  Distroy a memory pool
+  * @param  pool: Pointer to the created memory pool.
+  * @retval None
+  */
 void rt_pool_distroy(P_POOL pool){
     OSDisable();
     rt_mem_free(&system_memory, pool);
     OSEnable();
 }
 
+/**
+  * @brief  Allocate a space from memory pool.
+  * @param  pool: Pointer to the created memory pool.
+  * @retval Pointer to allocated memory.
+  */
 void *rt_pool_alloc(P_POOL pool){
     int free_id;
     char *mem = NULL;
@@ -61,6 +78,12 @@ void *rt_pool_alloc(P_POOL pool){
     return mem;
 }
 
+/**
+  * @brief  Free memory space.
+  * @param  pool: Pointer to the created memory pool.
+  * @retval ptr: Pointer to allocated memory.
+  * @retval None
+  */
 void rt_pool_free(P_POOL pool, void *ptr){
     int id;
     OSDisable();
