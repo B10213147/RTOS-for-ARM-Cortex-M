@@ -22,6 +22,10 @@ P_POOL list_pool;
 
 /* Private functions ---------------------------------------------------------*/
 
+/* ---------------------------------------------------------------------------*/
+/*                              Kernel Control                                */
+/* ---------------------------------------------------------------------------*/
+  
 /**
   * @brief  Start real time operating system.
   * @param  slice: timeslice in microseconds.
@@ -96,6 +100,10 @@ void OSDisable(void){
     }
 }
 
+/* ---------------------------------------------------------------------------*/
+/*                              Thread Control                                */
+/* ---------------------------------------------------------------------------*/
+
 /**
   * @brief  Create task for RTOS.
   * @param  task_entry: Function name.
@@ -146,4 +154,34 @@ uint8_t OSTaskDelete(voidfuncptr task){
     }
     
     return rt_tsk_delete(tid);
+}
+
+/* ---------------------------------------------------------------------------*/
+/*                            MessageQ Control                                */
+/* ---------------------------------------------------------------------------*/
+
+P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
+    P_MSGQ msg = NULL;
+    OSDisable();
+    
+    msg = rt_mem_alloc(&system_memory, sizeof(struct msgq));
+    if(!msg){ 
+        OSEnable();
+        return NULL; 
+    }
+    
+    // 4-byte alignment
+    size = (size + 3U) & ~3U;
+    
+    msg->mail = rt_mail_create(blocks * size);
+    if(!msg->mail){
+        rt_mem_free(&system_memory, msg);
+        OSEnable();
+        return NULL;
+    }
+    msg->size = size;
+    msg->blocks = blocks;
+    
+    OSEnable();
+    return msg;
 }
