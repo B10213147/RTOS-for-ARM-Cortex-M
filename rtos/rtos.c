@@ -194,3 +194,11 @@ void OSMessageQDistroy(P_MSGQ msg){
         OSEnable();
     }
 }
+
+uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
+    OSDisable();
+    int i = rt_mail_write(msg->mail, data, msg->size);
+    OSEnable();
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
+}
