@@ -3,44 +3,49 @@
 void test1(void);
 void test2(void);
 
-char test1_Rx_buff[10];
-OS_MCB test1_Rx = {0, 0, 10, test1_Rx_buff};
-char test1_Tx_buff[10];
-OS_MCB test1_Tx = {0, 0, 10, test1_Tx_buff};
-char test2_Rx_buff[10];
-OS_MCB test2_Rx = {0, 0, 10, test2_Rx_buff};
-char test2_Tx_buff[10];
-OS_MCB test2_Tx = {0, 0, 10, test2_Tx_buff};
+P_MAIL Rx1;
+P_MAIL Tx1;
+P_MAIL Rx2;
+P_MAIL Tx2;
+char memtest[500];
+
 int main(void){
-    OS_Task_Create(test1);    
-    OS_Task_Create(__empty);
-    OS_Task_Create(test2);    
-    OS_Task_Create(__empty);
-    OS_Init(1000, CM_SysTick);  // Time slice = 1ms
-    OS_Enable();
+    OSInit(1000, CM_SysTick, memtest, 500);  // Time slice = 1ms
+    OSTaskCreate(test1, 0, 5);  
+    Rx1 = rt_mail_create(10);
+    Tx1 = rt_mail_create(13);
+    OSTaskCreate(test2, 0, 2);   
+    Rx2 = rt_mail_create(12);
+    Tx2 = rt_mail_create(11);
+    OSEnable();
     
-    OS_MBX_Write(&test1_Tx, "abc", 3);
+    rt_mail_write(Rx1, "Hello", 5);
+    char a[10];
     while(1){
-        char tmp[5];
-        OS_Disable();
-        OS_MBX_Read(&test1_Tx, tmp, 3);
-        OS_MBX_Write(&test2_Rx, tmp, 3);
-        OS_Enable();
-        OS_Disable();
-        OS_MBX_Read(&test2_Tx, tmp, 3);
-        OS_MBX_Write(&test1_Rx, tmp, 3);
-        OS_Enable();
+        OSDisable();
+        if(rt_mail_read(Tx1, a, 5) == 5){
+            rt_mail_write(Rx2, a, 5);
+        }
+        OSEnable();
+        OSDisable();
+        if(rt_mail_read(Tx2, a, 5) == 5){
+            rt_mail_write(Rx1, a, 5);
+        }
+        OSEnable();
     }
     return 0;
+    
 }
 
 void test1(void){
-    char tmp1[5];
-    OS_MBX_Read(&test1_Rx, tmp1, 3);
-    OS_MBX_Write(&test1_Tx, tmp1, 3);
+    char a[10];
+    if(rt_mail_read(Rx1, a, 5) == 5){
+        rt_mail_write(Tx1, a, 5);
+    }
 }
 void test2(void){
-    char tmp2[5];
-    OS_MBX_Read(&test2_Rx, tmp2, 3);
-    OS_MBX_Write(&test2_Tx, tmp2, 3);
+    char a[10];
+    if(rt_mail_read(Rx2, a, 5) == 5){
+        rt_mail_write(Tx2, a, 5);
+    }
 }

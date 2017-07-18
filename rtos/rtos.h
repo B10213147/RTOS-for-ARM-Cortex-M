@@ -11,12 +11,18 @@
 #include "stm32f0xx.h"                  // Device header
 #include "rt_TypeDef.h"
 #include "rt_task.h"
+#include "rt_list.h"
 #include "rt_mailbox.h"
+#include "rt_memory.h"
 
-#define     MAX_TASK_N    16    // Maximum number of tasks in sch_tab[]
+#define     max_active_TCB      32
 
-void OS_Init(uint32_t slice, triggerType source);
-void OS_Enable(void);
-void OS_Disable(void);
+void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
+void OSEnable(void);
+void OSDisable(void);
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval);
+uint8_t OSTaskDelete(voidfuncptr task);
+
+extern struct mem system_memory;
 
 #endif /* RTOS_H_ */
