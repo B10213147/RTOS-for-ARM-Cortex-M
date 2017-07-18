@@ -202,3 +202,11 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }
+
+uint8_t OSMessageQRead(P_MSGQ msg, void *data){
+    OSDisable();    
+    int i = rt_mail_read(msg->mail, data, msg->size);    
+    OSEnable();
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
+}
