@@ -160,6 +160,13 @@ uint8_t OSTaskDelete(voidfuncptr task){
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
 
+/**
+  * @brief  Create Message Queue.
+  * @param  size: Size of each block in byte.
+  * @param  blocks: Number of block.
+  * @retval Pointer of message queue.
+  * @retval NULL - No message queue created.
+  */
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     P_MSGQ msg = NULL;
     OSDisable();
@@ -186,6 +193,11 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     return msg;
 }
 
+/**
+  * @brief  Create Message Queue.
+  * @param  msg: Pointer of message queue.
+  * @retval None
+  */
 void OSMessageQDistroy(P_MSGQ msg){
     if(msg){
         OSDisable();
@@ -195,6 +207,13 @@ void OSMessageQDistroy(P_MSGQ msg){
     }
 }
 
+/**
+  * @brief  Write a message into queue.
+  * @param  msg: Pointer of message queue.
+  * @param  data: A message.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
     OSDisable();
     int i = rt_mail_write(msg->mail, data, msg->size);
@@ -203,6 +222,13 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
     else{ return 1; }
 }
 
+/**
+  * @brief  Read a message from queue.
+  * @param  msg: Pointer of message queue.
+  * @param  data: Pointer to a space where read data can put.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
     OSDisable();    
     int i = rt_mail_read(msg->mail, data, msg->size);    
