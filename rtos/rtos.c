@@ -185,3 +185,12 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     OSEnable();
     return msg;
 }
+
+void OSMessageQDistroy(P_MSGQ msg){
+    if(msg){
+        OSDisable();
+        rt_mail_delete(msg->mail);
+        rt_mem_free(&system_memory, msg);
+        OSEnable();
+    }
+}
