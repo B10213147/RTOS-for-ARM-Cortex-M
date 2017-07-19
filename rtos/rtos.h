@@ -18,13 +18,17 @@
 
 #define     max_active_TCB      32
 
+// Kernel Control
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
 void OSEnable(void);
 void OSDisable(void);
+// Thread Control 
 uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority);
 uint8_t OSTaskDelete(voidfuncptr task);
+// Memory Control 
 void *OSmalloc(uint32_t size);
 void OSfree(void *ptr);
+// MessageQ Control 
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks);
 void OSMessageQDistroy(P_MSGQ msg);
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data);
