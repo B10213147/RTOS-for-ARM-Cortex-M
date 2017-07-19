@@ -158,6 +158,18 @@ uint8_t OSTaskDelete(voidfuncptr task){
 }
 
 /* ---------------------------------------------------------------------------*/
+/*                              Memory Control                                */
+/* ---------------------------------------------------------------------------*/
+
+void *OSmalloc(uint32_t size){
+    char *mem = NULL;
+    OSDisable();
+    mem = (char *)rt_mem_alloc(&system_memory, size);
+    OSEnable();
+    return mem;
+}
+
+/* ---------------------------------------------------------------------------*/
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
 
@@ -195,7 +207,7 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
 }
 
 /**
-  * @brief  Create Message Queue.
+  * @brief  Distroy Message Queue.
   * @param  msg: Pointer of message queue.
   * @retval None
   */
