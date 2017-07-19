@@ -49,7 +49,7 @@ void ST_TIM6_Config(uint16_t ticks){
   */
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-        SysTick->LOAD = slice_quantum;
+        SysTick->LOAD = slice_quantum - 0x1AU;  // Calibration
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
@@ -59,7 +59,7 @@ void SysTick_Handler(void){
             // Task spent over time slice
             while(1);
         }
-        SysTick->LOAD -= SysTick->VAL + (num_of_empty - 1) * slice_quantum;
+        SysTick->LOAD -= SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x2CU;
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
     }
 }
