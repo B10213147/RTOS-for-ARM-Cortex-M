@@ -49,7 +49,7 @@ void ST_TIM6_Config(uint16_t ticks){
   */
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-        SysTick->LOAD = slice_quantum - 0x1AU;  // Calibration
+        SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
@@ -59,7 +59,7 @@ void SysTick_Handler(void){
             // Task spent over time slice
             while(1);
         }
-        SysTick->LOAD -= SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x2CU;
+        SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
     }
 }
@@ -72,6 +72,7 @@ void SysTick_Handler(void){
 void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
+        TIM6->ARR = slice_quantum - 1U;
         // Schedular
         rt_sched();
         // Sched ends
@@ -79,7 +80,7 @@ void TIM6_DAC_IRQHandler(void){
             // Task spent over time slice
             while(1);
         }
-        TIM6->CNT += (num_of_empty - 1) * slice_quantum - 0x20U;    // Calibration
+        TIM6->ARR = num_of_empty * slice_quantum - 1U;
     }
 }
 
