@@ -122,7 +122,9 @@ P_LIST rt_list_updated(void){
             another->next = NULL;
             
             for(prev = 0, cur = list; cur; prev = cur, cur = cur->next){
-                if(task->remain_ticks < cur->task->remain_ticks){
+                if(task->priority < cur->task->priority || \
+                    (task->priority == cur->task->priority &&
+                    task->remain_ticks < cur->task->remain_ticks)){
                     if(prev){ prev->next = another; }
                     else{ list = another; }
                     another->next = cur;

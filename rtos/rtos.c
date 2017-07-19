@@ -109,6 +109,7 @@ void OSDisable(void){
   * @param  task_entry: Function name.
   * @param  argv: Function's arguments.
   * @param  interval: Number of timeslices in which the task is scheduled once.
+  * @param  priority: Priority of task. (Lower value means higer priority)
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
@@ -123,8 +124,8 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
     
     n_task = rt_tsk_create(&task);
     if(!n_task){ return 1; }  // Task create failed
-    //rt_put_first(&os_rdy_tasks, task);
-    rt_put_last(&os_rdy_tasks, n_task);
+    rt_put_first(&os_rdy_tasks, n_task);
+    //rt_put_last(&os_rdy_tasks, n_task);
 
     return 0;
 }
