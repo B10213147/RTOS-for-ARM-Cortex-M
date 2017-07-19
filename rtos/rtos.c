@@ -161,6 +161,11 @@ uint8_t OSTaskDelete(voidfuncptr task){
 /*                              Memory Control                                */
 /* ---------------------------------------------------------------------------*/
 
+/**
+  * @brief  Allocate memory space from system memory.
+  * @param  size: Size in byte.
+  * @retval Pointer to allocated memory.
+  */
 void *OSmalloc(uint32_t size){
     char *mem = NULL;
     OSDisable();
@@ -169,6 +174,11 @@ void *OSmalloc(uint32_t size){
     return mem;
 }
 
+/**
+  * @brief  Free memory space into system memory.
+  * @param  ptr: Pointer to allocated memory.
+  * @retval None
+  */
 void OSfree(void *ptr){
     OSDisable();
     rt_mem_free(&system_memory, ptr);
