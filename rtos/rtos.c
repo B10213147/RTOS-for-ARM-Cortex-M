@@ -169,6 +169,12 @@ void *OSmalloc(uint32_t size){
     return mem;
 }
 
+void OSfree(void *ptr){
+    OSDisable();
+    rt_mem_free(&system_memory, ptr);
+    OSEnable();
+}
+
 /* ---------------------------------------------------------------------------*/
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
