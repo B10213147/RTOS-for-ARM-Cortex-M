@@ -112,13 +112,14 @@ void OSDisable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval){
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
     struct OS_TCB task;
     P_TCB n_task;
     
     task.function = task_entry;
     task.arg = argv;
     task.interval = interval;
+    task.priority = priority;
     
     n_task = rt_tsk_create(&task);
     if(!n_task){ return 1; }  // Task create failed
@@ -154,6 +155,34 @@ uint8_t OSTaskDelete(voidfuncptr task){
     }
     
     return rt_tsk_delete(tid);
+}
+
+/* ---------------------------------------------------------------------------*/
+/*                              Memory Control                                */
+/* ---------------------------------------------------------------------------*/
+
+/**
+  * @brief  Allocate memory space from system memory.
+  * @param  size: Size in byte.
+  * @retval Pointer to allocated memory.
+  */
+void *OSmalloc(uint32_t size){
+    char *mem = NULL;
+    OSDisable();
+    mem = (char *)rt_mem_alloc(&system_memory, size);
+    OSEnable();
+    return mem;
+}
+
+/**
+  * @brief  Free memory space into system memory.
+  * @param  ptr: Pointer to allocated memory.
+  * @retval None
+  */
+void OSfree(void *ptr){
+    OSDisable();
+    rt_mem_free(&system_memory, ptr);
+    OSEnable();
 }
 
 /* ---------------------------------------------------------------------------*/
@@ -194,7 +223,7 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
 }
 
 /**
-  * @brief  Create Message Queue.
+  * @brief  Distroy Message Queue.
   * @param  msg: Pointer of message queue.
   * @retval None
   */

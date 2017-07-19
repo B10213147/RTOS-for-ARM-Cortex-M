@@ -18,13 +18,13 @@
 
 #define     max_active_TCB      32
 
-#define     max_active_TCB      32
-
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
 void OSEnable(void);
 void OSDisable(void);
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval);
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority);
 uint8_t OSTaskDelete(voidfuncptr task);
+void *OSmalloc(uint32_t size);
+void OSfree(void *ptr);
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks);
 void OSMessageQDistroy(P_MSGQ msg);
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data);
