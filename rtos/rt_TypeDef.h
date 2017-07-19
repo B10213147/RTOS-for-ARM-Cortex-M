@@ -29,6 +29,7 @@ typedef struct OS_TCB{
 	void *arg;
     int interval;
     int remain_ticks;
+    int priority;
 }*P_TCB;
 
 typedef struct task_list{

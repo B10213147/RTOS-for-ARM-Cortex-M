@@ -112,13 +112,14 @@ void OSDisable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval){
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
     struct OS_TCB task;
     P_TCB n_task;
     
     task.function = task_entry;
     task.arg = argv;
     task.interval = interval;
+    task.priority = priority;
     
     n_task = rt_tsk_create(&task);
     if(!n_task){ return 1; }  // Task create failed
