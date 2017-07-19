@@ -13,6 +13,9 @@
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+void idle(void){
+}
+
 /* Private variables ---------------------------------------------------------*/
 triggerType rt_trigger;
 int rt_start_counter = 0;
@@ -59,6 +62,9 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
     while(!task_pool || !list_pool);    // Not enough space in system_memory
+    
+    // Create idle task
+    OSTaskCreate(idle, 0, 65536 / slice_quantum, 255);
 }
 
 /**

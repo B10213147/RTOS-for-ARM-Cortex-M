@@ -79,9 +79,7 @@ void TIM6_DAC_IRQHandler(void){
             // Task spent over time slice
             while(1);
         }
-        else{
-            return;
-        }
+        TIM6->CNT += (num_of_empty - 1) * slice_quantum - 0x20U;    // Calibration
     }
 }
 
