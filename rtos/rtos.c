@@ -19,6 +19,7 @@ int rt_start_counter = 0;
 struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
+uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -36,7 +37,7 @@ P_POOL list_pool;
   * @retval None
   */
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
-    uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
+    slice_quantum = slice * (SystemCoreClock / 1000000);
     rt_trigger = source;
     switch(rt_trigger){
     case CM_SysTick:
@@ -245,9 +246,7 @@ void OSMessageQDistroy(P_MSGQ msg){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
-    OSDisable();
     int i = rt_mail_write(msg->mail, data, msg->size);
-    OSEnable();
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }
@@ -260,9 +259,7 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    OSDisable();    
-    int i = rt_mail_read(msg->mail, data, msg->size);    
-    OSEnable();
+    int i = rt_mail_read(msg->mail, data, msg->size); 
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }

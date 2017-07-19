@@ -20,6 +20,8 @@ void ST_Blink(void);
 void TI_Blink(void);
 
 /* Private variables ---------------------------------------------------------*/
+extern uint32_t slice_quantum;
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -47,16 +49,18 @@ void ST_TIM6_Config(uint16_t ticks){
   */
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
+        SysTick->LOAD = slice_quantum;
+        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
+
         // Sched ends
         if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
             // Task spent over time slice
             while(1);
         }
-        else{
-            return;
-        }
+        SysTick->LOAD -= SysTick->VAL + (num_of_empty - 1) * slice_quantum;
+        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
     }
 }
 

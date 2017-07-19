@@ -19,5 +19,6 @@ void rt_sched(void);
 
 extern struct OS_TCB *os_running_tsk;
 extern struct OS_TCB *os_rdy_tasks;
+extern int num_of_empty;
 
 #endif /* RT_LIST_H_ */
