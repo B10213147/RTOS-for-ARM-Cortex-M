@@ -58,6 +58,12 @@ typedef struct mempool{
     uint32_t blocks;
 }*P_POOL;
 
+typedef struct msgq{
+    P_MAIL mail;
+    uint32_t size;
+    uint32_t blocks;
+}*P_MSGQ;
+
 typedef enum{
     CM_SysTick,
     ST_TIM6

@@ -25,6 +25,10 @@ void OSEnable(void);
 void OSDisable(void);
 uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval);
 uint8_t OSTaskDelete(voidfuncptr task);
+P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks);
+void OSMessageQDistroy(P_MSGQ msg);
+uint8_t OSMessageQWrite(P_MSGQ msg, void *data);
+uint8_t OSMessageQRead(P_MSGQ msg, void *data);
 
 extern struct mem system_memory;
 extern P_POOL task_pool;

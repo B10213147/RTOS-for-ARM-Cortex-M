@@ -22,6 +22,10 @@ P_POOL list_pool;
 
 /* Private functions ---------------------------------------------------------*/
 
+/* ---------------------------------------------------------------------------*/
+/*                              Kernel Control                                */
+/* ---------------------------------------------------------------------------*/
+  
 /**
   * @brief  Start real time operating system.
   * @param  slice: timeslice in microseconds.
@@ -96,6 +100,10 @@ void OSDisable(void){
     }
 }
 
+/* ---------------------------------------------------------------------------*/
+/*                              Thread Control                                */
+/* ---------------------------------------------------------------------------*/
+
 /**
   * @brief  Create task for RTOS.
   * @param  task_entry: Function name.
@@ -146,4 +154,85 @@ uint8_t OSTaskDelete(voidfuncptr task){
     }
     
     return rt_tsk_delete(tid);
+}
+
+/* ---------------------------------------------------------------------------*/
+/*                            MessageQ Control                                */
+/* ---------------------------------------------------------------------------*/
+
+/**
+  * @brief  Create Message Queue.
+  * @param  size: Size of each block in byte.
+  * @param  blocks: Number of block.
+  * @retval Pointer of message queue.
+  * @retval NULL - No message queue created.
+  */
+P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
+    P_MSGQ msg = NULL;
+    OSDisable();
+    
+    msg = rt_mem_alloc(&system_memory, sizeof(struct msgq));
+    if(!msg){ 
+        OSEnable();
+        return NULL; 
+    }
+    
+    // 4-byte alignment
+    size = (size + 3U) & ~3U;
+    
+    msg->mail = rt_mail_create(blocks * size);
+    if(!msg->mail){
+        rt_mem_free(&system_memory, msg);
+        OSEnable();
+        return NULL;
+    }
+    msg->size = size;
+    msg->blocks = blocks;
+    
+    OSEnable();
+    return msg;
+}
+
+/**
+  * @brief  Create Message Queue.
+  * @param  msg: Pointer of message queue.
+  * @retval None
+  */
+void OSMessageQDistroy(P_MSGQ msg){
+    if(msg){
+        OSDisable();
+        rt_mail_delete(msg->mail);
+        rt_mem_free(&system_memory, msg);
+        OSEnable();
+    }
+}
+
+/**
+  * @brief  Write a message into queue.
+  * @param  msg: Pointer of message queue.
+  * @param  data: A message.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
+uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
+    OSDisable();
+    int i = rt_mail_write(msg->mail, data, msg->size);
+    OSEnable();
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
+}
+
+/**
+  * @brief  Read a message from queue.
+  * @param  msg: Pointer of message queue.
+  * @param  data: Pointer to a space where read data can put.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
+uint8_t OSMessageQRead(P_MSGQ msg, void *data){
+    OSDisable();    
+    int i = rt_mail_read(msg->mail, data, msg->size);    
+    OSEnable();
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
 }
