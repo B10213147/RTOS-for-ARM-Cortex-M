@@ -13,12 +13,16 @@
 /* Private define ------------------------------------------------------------*/ 
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+void idle(void){
+}
+
 /* Private variables ---------------------------------------------------------*/
 triggerType rt_trigger;
 int rt_start_counter = 0;
 struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
+uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -36,14 +40,19 @@ P_POOL list_pool;
   * @retval None
   */
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
-    uint32_t slice_quantum = slice * (SystemCoreClock / 1000000);
+    uint32_t idle_interval;
+    slice_quantum = slice * (SystemCoreClock / 1000000);
     rt_trigger = source;
     switch(rt_trigger){
     case CM_SysTick:
+        // Systick is a 24-bit downcount counter
+        idle_interval = ((0x1U << 25) - 1) / slice_quantum;
         while(SysTick_Config(slice_quantum));
         SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
         break;
     case ST_TIM6:
+        // Timer6 is a 16-bit upcount counter
+        idle_interval = ((0x1U << 17) - 1) / slice_quantum;
         ST_TIM6_Config(slice_quantum);
         break;
     default:
@@ -58,6 +67,9 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
     while(!task_pool || !list_pool);    // Not enough space in system_memory
+    
+    // Create idle task
+    OSTaskCreate(idle, 0, idle_interval, 255);
 }
 
 /**
@@ -245,9 +257,7 @@ void OSMessageQDistroy(P_MSGQ msg){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
-    OSDisable();
     int i = rt_mail_write(msg->mail, data, msg->size);
-    OSEnable();
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }
@@ -260,9 +270,7 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    OSDisable();    
-    int i = rt_mail_read(msg->mail, data, msg->size);    
-    OSEnable();
+    int i = rt_mail_read(msg->mail, data, msg->size); 
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }

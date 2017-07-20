@@ -17,6 +17,8 @@
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
 int sch_tst = task_completed;
+int num_of_empty = 1;   // Number of timeslices from the last non-empty 
+                        // timeslice to the next one.
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -108,12 +110,16 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
   * @retval 0 No list created.
   */
 P_LIST rt_list_updated(void){
+    int next = 0x7fffffff;
     P_TCB task;
     P_LIST another, prev, cur, list = NULL;
     for(task = os_rdy_tasks; task; task = task->next){
-        task->remain_ticks--;
+        task->remain_ticks -= num_of_empty;
         if(task->remain_ticks > 0){
-
+            // Waiting time not expired yet
+            if(next > task->remain_ticks){
+                next = task->remain_ticks;
+            }
         }
         else{
             // Another ready to be scheduled task
@@ -128,6 +134,9 @@ P_LIST rt_list_updated(void){
                     if(prev){ prev->next = another; }
                     else{ list = another; }
                     another->next = cur;
+                    if(next > task->remain_ticks + task->interval){
+                        next = task->remain_ticks + task->interval;
+                    }
                     break;
                 }
             }
@@ -144,6 +153,8 @@ P_LIST rt_list_updated(void){
             } 
         }
     }
+    if(next < 1 || next == 0x7fffffff){ next = 1; }
+    num_of_empty = next;
     return list;
 }
 
