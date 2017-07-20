@@ -37,6 +37,8 @@ uint32_t slice_quantum;
   *   This parameter can be one of the following values:
   *     @arg CM_SysTick
   *     @arg ST_TIM6
+  * @param  memory: Pointer to system memory.
+  * @param  size: Size in byte.
   * @retval None
   */
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
