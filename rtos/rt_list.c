@@ -133,10 +133,7 @@ P_LIST rt_list_updated(void){
                     task->remain_ticks < cur->task->remain_ticks)){
                     if(prev){ prev->next = another; }
                     else{ list = another; }
-                    another->next = cur;
-                    if(next > task->remain_ticks + task->interval){
-                        next = task->remain_ticks + task->interval;
-                    }
+                    another->next = cur;                    
                     break;
                 }
             }
@@ -151,6 +148,9 @@ P_LIST rt_list_updated(void){
                     list = another;
                 }
             } 
+            if(next > task->remain_ticks + task->interval){
+                next = task->remain_ticks + task->interval;
+            }
         }
     }
     if(next < 1 || next == 0x7fffffff){ next = 1; }
@@ -184,7 +184,7 @@ void rt_sched(void){
     if(sch_tst == task_running){ while(1); }
     while(list){ rt_rmv_list(&list); }
     list = rt_list_updated();
-    if(list){
+    while(list){
         sch_tst = task_running;
         
         os_running_tsk = rt_rmv_list(&list);
