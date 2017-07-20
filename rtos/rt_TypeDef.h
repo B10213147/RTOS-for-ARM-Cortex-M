@@ -70,9 +70,4 @@ typedef enum{
     ST_TIM6
 }triggerType;
 
-typedef enum{
-    task_completed,
-    task_running
-}sch_statusType;
-
 #endif /* RT_TYPEDEF_H_ */

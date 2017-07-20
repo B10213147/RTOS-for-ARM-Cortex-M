@@ -53,12 +53,8 @@ void SysTick_Handler(void){
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
-
         // Sched ends
-        if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-            // Task spent over time slice
-            while(1);
-        }
+
         SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
     }
@@ -76,10 +72,7 @@ void TIM6_DAC_IRQHandler(void){
         // Schedular
         rt_sched();
         // Sched ends
-        if(TIM6->SR & TIM_SR_UIF){
-            // Task spent over time slice
-            while(1);
-        }
+        
         TIM6->ARR = num_of_empty * slice_quantum - 1U;
     }
 }
