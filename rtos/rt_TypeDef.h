@@ -65,9 +65,4 @@ typedef struct msgq{
     uint32_t blocks;
 }*P_MSGQ;
 
-typedef enum{
-    task_completed,
-    task_running
-}sch_statusType;
-
 #endif /* RT_TYPEDEF_H_ */

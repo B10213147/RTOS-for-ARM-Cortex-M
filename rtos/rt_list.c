@@ -16,7 +16,6 @@
 /* Private variables ---------------------------------------------------------*/
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
-int sch_tst = task_completed;
 int num_of_empty = 1;   // Number of timeslices from the last non-empty 
                         // timeslice to the next one.
 
@@ -133,10 +132,7 @@ P_LIST rt_list_updated(void){
                     task->remain_ticks < cur->task->remain_ticks)){
                     if(prev){ prev->next = another; }
                     else{ list = another; }
-                    another->next = cur;
-                    if(next > task->remain_ticks + task->interval){
-                        next = task->remain_ticks + task->interval;
-                    }
+                    another->next = cur;                    
                     break;
                 }
             }
@@ -151,6 +147,9 @@ P_LIST rt_list_updated(void){
                     list = another;
                 }
             } 
+            if(next > task->remain_ticks + task->interval){
+                next = task->remain_ticks + task->interval;
+            }
         }
     }
     if(next < 1 || next == 0x7fffffff){ next = 1; }
@@ -181,12 +180,9 @@ P_TCB rt_rmv_list(P_LIST *list){
   */
 void rt_sched(void){
     static P_LIST list = NULL;
-    if(sch_tst == task_running){ while(1); }
     while(list){ rt_rmv_list(&list); }
     list = rt_list_updated();
-    if(list){
-        sch_tst = task_running;
-        
+    while(list){        
         os_running_tsk = rt_rmv_list(&list);
         os_running_tsk->state = Running;
         os_running_tsk->function();
@@ -194,5 +190,4 @@ void rt_sched(void){
         os_running_tsk->remain_ticks += os_running_tsk->interval;
         os_running_tsk = 0;
     }
-    sch_tst = task_completed;
 }
