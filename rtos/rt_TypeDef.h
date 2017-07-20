@@ -66,11 +66,6 @@ typedef struct msgq{
 }*P_MSGQ;
 
 typedef enum{
-    CM_SysTick,
-    ST_TIM6
-}triggerType;
-
-typedef enum{
     task_completed,
     task_running
 }sch_statusType;

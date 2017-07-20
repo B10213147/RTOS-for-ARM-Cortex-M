@@ -17,7 +17,6 @@ void idle(void){
 }
 
 /* Private variables ---------------------------------------------------------*/
-triggerType rt_trigger;
 int rt_start_counter = 0;
 struct mem system_memory;
 P_POOL task_pool;
@@ -32,32 +31,26 @@ uint32_t slice_quantum;
   
 /**
   * @brief  Start real time operating system.
-  * @param  slice: timeslice in microseconds.
-  * @param  source: RTOS trigger source
-  *   This parameter can be one of the following values:
-  *     @arg CM_SysTick
-  *     @arg ST_TIM6
+  * @param  slice: Timeslice in microseconds.
+  * @param  memory: Pointer to system memory.
+  * @param  size: Size in byte.
   * @retval None
   */
-void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
+void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
     slice_quantum = slice * (SystemCoreClock / 1000000);
-    rt_trigger = source;
-    switch(rt_trigger){
-    case CM_SysTick:
-        // Systick is a 24-bit downcount counter
-        idle_interval = ((0x1U << 25) - 1) / slice_quantum;
-        while(SysTick_Config(slice_quantum));
-        SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
-        break;
-    case ST_TIM6:
-        // Timer6 is a 16-bit upcount counter
-        idle_interval = ((0x1U << 17) - 1) / slice_quantum;
-        ST_TIM6_Config(slice_quantum);
-        break;
-    default:
-        break;
-    }
+    
+#if (os_trigger_source == CM_SysTick)
+     // Systick is a 24-bit downcount counter
+    idle_interval = ((0x1U << 25) - 1) / slice_quantum;
+    while(SysTick_Config(slice_quantum));
+    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;   
+#elif (os_trigger_source == ST_TIM6)
+    // Timer6 is a 16-bit upcount counter
+    idle_interval = ((0x1U << 17) - 1) / slice_quantum;
+    ST_TIM6_Config(slice_quantum);    
+#endif
+
     // Initialize task TCB pointers to NULL.
     for(int i = 0; i < max_active_TCB; i++){
         os_active_TCB[i] = NULL;
@@ -80,16 +73,13 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
 void OSEnable(void){
     rt_start_counter++;
     if(rt_start_counter > 0){
-        switch(rt_trigger){
-        case CM_SysTick:
-            SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
-            break;
-        case ST_TIM6:
-            TIM6->DIER |= TIM_DIER_UIE;
-            break;
-        default:
-            break;
-        }
+        
+#if (os_trigger_source == CM_SysTick)
+        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;  
+#elif (os_trigger_source == ST_TIM6)
+        TIM6->DIER |= TIM_DIER_UIE;  
+#endif        
+
     }
 }
 
@@ -100,16 +90,11 @@ void OSEnable(void){
   */
 void OSDisable(void){
     rt_start_counter--;
-    switch(rt_trigger){
-    case CM_SysTick:
-        SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
-        break;
-    case ST_TIM6:
-        TIM6->DIER &= ~TIM_DIER_UIE;
-        break;
-    default:
-        break;
-    }
+#if (os_trigger_source == CM_SysTick)
+    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;  
+#elif (os_trigger_source == ST_TIM6)
+    TIM6->DIER &= ~TIM_DIER_UIE;  
+#endif
 }
 
 /* ---------------------------------------------------------------------------*/

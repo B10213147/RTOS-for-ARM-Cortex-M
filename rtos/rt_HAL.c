@@ -25,24 +25,6 @@ extern uint32_t slice_quantum;
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Timer6 configuration.
-  * @param  ticks: Number of ticks between two interrupts.
-  * @retval None
-  */
-void ST_TIM6_Config(uint16_t ticks){
-    while(!(RCC->APB1ENR & RCC_APB1ENR_TIM6EN)){
-        RCC->APB1ENR |= RCC_APB1ENR_TIM6EN;
-    }
-    if(TIM6->CR1 & TIM_CR1_CEN){
-        TIM6->CR1 &= ~TIM_CR1_CEN;
-    }
-    TIM6->ARR = ticks - 1U;
-    TIM6->CNT = 0;
-    NVIC_EnableIRQ(TIM6_DAC_IRQn);
-    TIM6->CR1 |= TIM_CR1_CEN;
-}
-
-/**
   * @brief  SysTick interrupt handler.
   * @param  None
   * @retval None
@@ -62,6 +44,24 @@ void SysTick_Handler(void){
         SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
     }
+}
+
+/**
+  * @brief  Timer6 configuration.
+  * @param  ticks: Number of ticks between two interrupts.
+  * @retval None
+  */
+void ST_TIM6_Config(uint16_t ticks){
+    while(!(RCC->APB1ENR & RCC_APB1ENR_TIM6EN)){
+        RCC->APB1ENR |= RCC_APB1ENR_TIM6EN;
+    }
+    if(TIM6->CR1 & TIM_CR1_CEN){
+        TIM6->CR1 &= ~TIM_CR1_CEN;
+    }
+    TIM6->ARR = ticks - 1U;
+    TIM6->CNT = 0;
+    NVIC_EnableIRQ(TIM6_DAC_IRQn);
+    TIM6->CR1 |= TIM_CR1_CEN;
 }
 
 /**

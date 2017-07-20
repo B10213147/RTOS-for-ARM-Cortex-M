@@ -16,10 +16,16 @@
 #include "rt_memory.h"
 #include "rt_mempool.h"
 
-#define     max_active_TCB      32
+#define     max_active_TCB      16
+
+// Trigger source
+#define     CM_SysTick          1U
+#define     ST_TIM6             2U
+
+#define     os_trigger_source   CM_SysTick
 
 // Kernel Control
-void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
+void OSInit(uint32_t slice, char *memory, uint32_t size);
 void OSEnable(void);
 void OSDisable(void);
 // Thread Control 
