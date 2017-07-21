@@ -98,9 +98,9 @@ void OSDisable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv){
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, char *stack, uint32_t size){
     P_TCB task;
-    task = rt_tsk_create(task_entry, argv, 0);
+    task = rt_tsk_create(task_entry, argv, stack, size);
     if(!task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
     rt_put_last(&os_rdy_tasks, task);
