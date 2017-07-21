@@ -20,6 +20,8 @@ void ST_Blink(void);
 void TI_Blink(void);
 
 /* Private variables ---------------------------------------------------------*/
+extern uint32_t cur_PSP, next_PSP;
+
 /* Private functions ---------------------------------------------------------*/
 
 void rt_init_stack(P_TCB task, char *stack, uint32_t size){
@@ -45,6 +47,42 @@ void rt_init_stack(P_TCB task, char *stack, uint32_t size){
     // -------
     *((uint32_t *)(task->tsk_stack + (14 << 2))) = (uint32_t)task->function;    // initial PC 
     *((uint32_t *)(task->tsk_stack + (15 << 2))) = 0x01000000;  // initial xPSR
+}
+
+__asm void rt_context_switch(void)
+{ // Context switching code
+    // Simple version - assume all tasks are unprivileged
+    // -------------------------
+    // Save current context
+    MRS R0, PSP // Get current process stack pointer value
+    SUBS R0, #32 // Allocate 32 bytes for R4 to R11
+    STMIA R0!,{R4-R7} // Save R4 to R7 in task stack (4 regs)
+    MOV R4, R8 // Copy R8 to R11 to R4 to R7
+    MOV R5, R9
+    MOV R6, R10
+    MOV R7, R11
+    STMIA R0!,{R4-R7} // Save R8 to R11 in task stack (4 regs)
+    SUBS R0, #32
+    LDR R1,=__cpp(&os_tsk.run)
+    LDR R2,=__cpp(&cur_PSP)
+    STR R0,[R2] // Save PSP value into PSP_array
+    // -------------------------
+    // Load next context
+    LDR R4,=__cpp(&os_tsk.next)
+    STR R4,[R1] // Set curr_task = next_task
+    LDR R3,=__cpp(&next_PSP)
+    LDR R0,[R3] // Load PSP value from PSP_array
+    ADDS R0, #16
+    LDMIA R0!,{R4-R7} // Load R8 to R11 from task stack (4 regs)
+    MOV R8, R4 // Copy to R8 - R11 to R4 to R7
+    MOV R9, R5
+    MOV R10, R6
+    MOV R11, R7
+    MSR PSP, R0 // Set PSP to next task
+    SUBS R0, #32
+    LDMIA R0!,{R4-R7} // Load R4 to R7 from task stack (4 regs)
+    BX LR // Return
+    ALIGN 4
 }
 
 /**
@@ -76,7 +114,7 @@ void SysTick_Handler(void){
         rt_sched();
         // Sched ends
         if(os_tsk.run != os_tsk.next){
-            // rt_context_switch
+            rt_context_switch();
         }
     }
 }

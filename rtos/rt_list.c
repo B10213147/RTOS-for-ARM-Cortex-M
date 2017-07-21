@@ -17,6 +17,7 @@ struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
 int sch_tst = task_completed;
 struct OS_TSK os_tsk = {0, 0};  // Running and next task info.
+uint32_t cur_PSP, next_PSP;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -109,7 +110,9 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
 void rt_sched(void){
     if(os_tsk.last){ rt_put_last(&os_rdy_tasks, os_tsk.last); }
     os_tsk.last = os_tsk.run;
-    os_tsk.next = rt_get_first(&os_rdy_tasks);
+    os_tsk.next = rt_get_first(&os_rdy_tasks);    
+    cur_PSP = os_tsk.run->tsk_stack;
+    next_PSP = os_tsk.next->tsk_stack;
     /*
     if(sch_tst == task_running){ while(1); }
     sch_tst = task_running;
