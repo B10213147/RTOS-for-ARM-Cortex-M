@@ -75,15 +75,8 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, char *stack, uint32_t si
     }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
-    
-    // Stack 4-byte alignment
-    uint32_t n_stack = ((uint32_t)stack + 0x3U) & ~0x3U;
-    size -= n_stack - (uint32_t)stack;  // Remove unwanted head
-    size &= ~0x3U;  // Remove unwanted tail
-    
-    p_task->priv_stack = size;
-    p_task->stack = (uint32_t *)n_stack;
-    rt_stack_init(p_task);
+
+    rt_init_stack(p_task, stack, size);
     
     OSEnable();    
     return p_task;

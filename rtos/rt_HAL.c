@@ -22,7 +22,12 @@ void TI_Blink(void);
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-void rt_stack_init(P_TCB task){
+void rt_init_stack(P_TCB task, char *stack, uint32_t size){
+    // Stack 4-byte alignment
+    uint32_t n_stack = ((uint32_t)stack + 0x3U) & ~0x3U;
+    size -= n_stack - (uint32_t)stack;  // Remove unwanted head
+    size &= ~0x3U;  // Remove unwanted tail
+    
     // Process Stack Pointer (PSP) value
     task->tsk_stack = (uint32_t)task->stack + task->priv_stack - 16 * 4;
     // Stack Frame format
