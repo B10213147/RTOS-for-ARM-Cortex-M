@@ -186,8 +186,13 @@ void rt_sched(void){
         os_running_tsk = rt_rmv_list(&list);
         os_running_tsk->state = Running;
         os_running_tsk->function();
-        os_running_tsk->state = Ready;
-        os_running_tsk->remain_ticks += os_running_tsk->interval;
-        os_running_tsk = 0;
+        if(os_running_tsk->state != Inactive){
+            os_running_tsk->state = Ready;
+            os_running_tsk->remain_ticks += os_running_tsk->interval;
+            os_running_tsk = 0;
+        }
+        else{
+            rt_tsk_delete(os_running_tsk->task_id);
+        }
     }
 }

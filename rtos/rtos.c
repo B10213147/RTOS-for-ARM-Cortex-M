@@ -145,6 +145,15 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
 }
 
 /**
+  * @brief  Task can delete itself by calling this function.
+  * @param  None
+  * @retval None
+  */
+void OSTaskDeleteSelf(void){
+    os_running_tsk->state = Inactive;
+}
+
+/**
   * @brief  Delete a task in RTOS.
   * @param  task: Function wait for deleted.
   * @retval 0 Function succeeded.
@@ -156,19 +165,16 @@ uint8_t OSTaskDelete(voidfuncptr task){
     if(os_running_tsk->function == task){
         // Delete running task
         os_running_tsk->state = Inactive;
-        tid = os_running_tsk->task_id;
-        os_running_tsk = 0;
-    }
-    else{
-        // Search ready list
-        tid = rt_find_TID(os_rdy_tasks, task);
-        if(tid != 0){
-            p_TCB = os_active_TCB[tid-1];
-            p_TCB->state = Inactive;
-            rt_rmv_task(&os_rdy_tasks, p_TCB);
-        }
+        return 0;
     }
     
+    // Search ready list
+    tid = rt_find_TID(os_rdy_tasks, task);
+    if(tid != 0){
+        p_TCB = os_active_TCB[tid-1];
+        p_TCB->state = Inactive;
+        rt_rmv_task(&os_rdy_tasks, p_TCB);
+    }    
     return rt_tsk_delete(tid);
 }
 
