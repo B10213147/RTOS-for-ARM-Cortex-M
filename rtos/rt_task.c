@@ -10,6 +10,7 @@
 #include "rtos.h"
 #include "rt_list.h"
 #include "rt_memory.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -68,11 +69,21 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, char *stack, uint32_t si
     task_id = rt_get_TID();
     if(task_id == 0){ 
         // Task create failed
+        rt_mem_free(&system_memory, p_task);
         OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
+    
+    // Stack 4-byte alignment
+    uint32_t n_stack = ((uint32_t)stack + 0x3U) & ~0x3U;
+    size -= n_stack - (uint32_t)stack;  // Remove unwanted head
+    size &= ~0x3U;  // Remove unwanted tail
+    
+    p_task->priv_stack = size;
+    p_task->stack = (uint32_t *)n_stack;
+    rt_stack_init(p_task);
     
     OSEnable();    
     return p_task;

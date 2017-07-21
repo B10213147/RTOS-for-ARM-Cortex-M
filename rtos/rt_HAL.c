@@ -22,6 +22,24 @@ void TI_Blink(void);
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+void rt_stack_init(P_TCB task){
+    // Process Stack Pointer (PSP) value
+    task->tsk_stack = (uint32_t)task->stack + task->priv_stack - 16 * 4;
+    // Stack Frame format
+    // -----------------------
+    // 15 - xPSP
+    // 14 - Return Address
+    // 13 - LR
+    // 12 - R12
+    // 8-11 - R0 - R3
+    // -------
+    // 4-7 - R8 - R11
+    // 0-3 - R4 - R7
+    // -------
+    *((uint32_t *)(task->tsk_stack + (14 << 2))) = (uint32_t)task->function;    // initial PC 
+    *((uint32_t *)(task->tsk_stack + (15 << 2))) = 0x01000000;  // initial xPSR
+}
+
 /**
   * @brief  Timer6 configuration.
   * @param  ticks: Number of ticks between two interrupts.
