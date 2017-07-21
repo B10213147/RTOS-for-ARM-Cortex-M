@@ -25,18 +25,19 @@ typedef struct OS_TCB{
     rt_stateType state;
     OS_TID task_id;
     struct OS_TCB *next;
-	voidfuncptr function;
-	void *arg;
-    
+    voidfuncptr function;
+    void *arg;
+    int interval;
+    int remain_ticks;
     uint16_t priv_stack;              /* Private stack size, 0= system assigned  */
     uint32_t tsk_stack;               /* Current task Stack pointer (R13)        */
     uint32_t *stack;                  /* Pointer to Task Stack memory block      */
 }*P_TCB;
 
-typedef struct OS_MCB{
+typedef struct mail_blk{
     uint32_t begin, end, length;
     char *data;
-}*P_MCB;
+}*P_MAIL;
 
 typedef struct mem_blk{
     struct mem_blk *next;
