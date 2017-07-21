@@ -24,6 +24,7 @@ void OSEnable(void);
 void OSDisable(void);
 // Thread Control 
 uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority);
+void OSTaskDeleteSelf(void);
 uint8_t OSTaskDelete(voidfuncptr task);
 // Memory Control 
 void *OSmalloc(uint32_t size);
