@@ -27,6 +27,10 @@ typedef struct OS_TCB{
     struct OS_TCB *next;
 	voidfuncptr function;
 	void *arg;
+    
+    uint16_t priv_stack;              /* Private stack size, 0= system assigned  */
+    uint32_t tsk_stack;               /* Current task Stack pointer (R13)        */
+    uint32_t *stack;                  /* Pointer to Task Stack memory block      */
 }*P_TCB;
 
 typedef struct OS_MCB{
