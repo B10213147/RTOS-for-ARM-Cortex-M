@@ -23,10 +23,12 @@ void TI_Blink(void);
 /* Private functions ---------------------------------------------------------*/
 
 void rt_init_stack(P_TCB task, char *stack, uint32_t size){
-    // Stack 4-byte alignment
+    // Stack 8-byte alignment
     uint32_t n_stack = ((uint32_t)stack + 0x3U) & ~0x3U;
     size -= n_stack - (uint32_t)stack;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail
+    task->stack = (uint32_t *)n_stack;
+    task->priv_stack = size;
     
     // Process Stack Pointer (PSP) value
     task->tsk_stack = (uint32_t)task->stack + task->priv_stack - 16 * 4;
@@ -73,12 +75,8 @@ void SysTick_Handler(void){
         // Schedular
         rt_sched();
         // Sched ends
-        if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-            // Task spent over time slice
-            while(1);
-        }
-        else{
-            return;
+        if(os_tsk.run != os_tsk.next){
+            // rt_context_switch
         }
     }
 }
