@@ -68,7 +68,7 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
   * @retval None
   */
 void OSFirstEnable(void){
-    os_tsk.run = rt_get_first(&os_rdy_tasks);
+    os_tsk.run = os_active_TCB[0];
     __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
     __set_CONTROL(0x3);
     __ISB();
@@ -136,7 +136,7 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, char *sta
     task.arg = argv;
     task.interval = interval;
     
-    n_task = rt_tsk_create(&task);
+    n_task = rt_tsk_create(&task, stack, size);
     if(!n_task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
     rt_put_last(&os_rdy_tasks, n_task);
@@ -231,9 +231,7 @@ void OSMessageQDistroy(P_MSGQ msg){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
-    OSDisable();
     int i = rt_mail_write(msg->mail, data, msg->size);
-    OSEnable();
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }
@@ -246,9 +244,7 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    OSDisable();    
-    int i = rt_mail_read(msg->mail, data, msg->size);    
-    OSEnable();
+    int i = rt_mail_read(msg->mail, data, msg->size);
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }

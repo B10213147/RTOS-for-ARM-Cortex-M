@@ -40,10 +40,12 @@ OS_TID rt_get_TID(void){
 /**
   * @brief  Create a task control block.
   * @param  task: Pointer of waiting created task.
+  * @param  stack: Pointer of the stack memory for this task.
+  * @param  size: Size of stack memory in byte.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(P_TCB task){
+P_TCB rt_tsk_create(P_TCB task, char *stack, uint32_t size){
     P_TCB p_task;
     OS_TID task_id;
     OSDisable();

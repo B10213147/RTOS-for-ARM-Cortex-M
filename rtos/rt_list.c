@@ -173,22 +173,14 @@ void rt_sched(void){
     if(sch_tst == task_running){ while(1); }
     while(list){ rt_rmv_list(&list); }
     list = rt_list_updated();
-    if(os_tsk.last){ rt_put_last(&os_rdy_tasks, os_tsk.last); }
-    os_tsk.last = os_tsk.run;
-    os_tsk.next = rt_get_first(&os_rdy_tasks);    
-    cur_PSP = &(os_tsk.run->tsk_stack);
-    next_PSP = os_tsk.next->tsk_stack;
-    /*
     if(list){
-        sch_tst = task_running;
-        
-        os_running_tsk = rt_rmv_list(&list);
-        os_running_tsk->state = Running;
-        os_running_tsk->function();
-        os_running_tsk->state = Ready;
-        os_running_tsk->remain_ticks += os_running_tsk->interval;
-        os_running_tsk = 0;
+        os_tsk.last = os_tsk.run; 
+        os_tsk.next = rt_rmv_list(&list);
+        os_tsk.next->remain_ticks += os_tsk.next->interval;
+        cur_PSP = &(os_tsk.run->tsk_stack);
+        next_PSP = os_tsk.next->tsk_stack;
     }
-    sch_tst = task_completed;
-    */
+    else{
+        os_tsk.next = os_tsk.run;
+    }
 }

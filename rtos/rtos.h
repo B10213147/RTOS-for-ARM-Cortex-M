@@ -16,7 +16,7 @@
 #include "rt_memory.h"
 #include "rt_mempool.h"
 
-#define     max_active_TCB      32
+#define     max_active_TCB      8
 
 void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
 void OSFirstEnable(void);
