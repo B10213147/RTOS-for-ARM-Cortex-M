@@ -51,6 +51,13 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     rt_mem_create(&system_memory, memory, size);
 }
 
+/**
+  * @brief  First time to enable RTOS.
+  * @note   This function should only called in thread mode(main.c)
+  * @note   and only called once.
+  * @param  None
+  * @retval None
+  */
 void OSFirstEnable(void){
     os_tsk.run = rt_get_first(&os_rdy_tasks);
     __set_PSP(os_tsk.run->tsk_stack + 16 * 4);

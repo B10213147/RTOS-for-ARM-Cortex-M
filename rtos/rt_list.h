@@ -20,5 +20,6 @@ void rt_sched(void);
 extern struct OS_TCB *os_running_tsk;
 extern struct OS_TCB *os_rdy_tasks;
 extern struct OS_TSK os_tsk;
+extern uint32_t *cur_PSP, next_PSP;
 
 #endif /* RT_LIST_H_ */
