@@ -40,6 +40,11 @@ typedef struct OS_TSK{
     P_TCB next;
 }*P_TSK;
 
+typedef struct task_list{
+    struct OS_TCB *task;
+    struct task_list *next;
+}*P_LIST;
+
 typedef struct mail_blk{
     uint32_t begin, end, length;
     char *data;
@@ -54,6 +59,19 @@ typedef struct mem{
     P_MEMB free;
     P_MEMB used;
 }*P_MEM;
+
+typedef struct mempool{
+    char *active_id;
+    char *pool;
+    uint32_t size;
+    uint32_t blocks;
+}*P_POOL;
+
+typedef struct msgq{
+    P_MAIL mail;
+    uint32_t size;
+    uint32_t blocks;
+}*P_MSGQ;
 
 typedef enum{
     CM_SysTick,

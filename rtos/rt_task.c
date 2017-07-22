@@ -16,10 +16,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-void __empty(void){
-    while(1);
-}
-
 /* Private variables ---------------------------------------------------------*/
 void *os_active_TCB[max_active_TCB];
 
@@ -43,29 +39,27 @@ OS_TID rt_get_TID(void){
 
 /**
   * @brief  Create a task control block.
-  * @param  task_entry: Function name.
-  * @param  argv: Function's arguments.
-  * @param  interval: Number of timeslices in which the task is scheduled once.
+  * @param  task: Pointer of waiting created task.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, char *stack, uint32_t size){
+P_TCB rt_tsk_create(P_TCB task){
     P_TCB p_task;
     OS_TID task_id;
     OSDisable();
     
-    p_task = (P_TCB)rt_mem_alloc(&system_memory, sizeof(struct OS_TCB));
+    p_task = (P_TCB)rt_pool_alloc(task_pool);
     if(!p_task){ 
         // Memory alloc failed
         OSEnable();
         return NULL; 
     }   
-    p_task->function = task_entry;
-    p_task->arg = argv;
+    p_task->function = task->function;
+    p_task->arg = task->arg;
     p_task->state = Ready;
     p_task->next = NULL;
-    p_task->interval = 0;
-    p_task->remain_ticks = 0;
+    p_task->interval = task->interval;
+    p_task->remain_ticks = task->interval;
     
     task_id = rt_get_TID();
     if(task_id == 0){ 
@@ -102,7 +96,7 @@ uint8_t rt_tsk_delete(OS_TID task_id){
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
-    rt_mem_free(&system_memory, p_TCB);
+    rt_pool_free(task_pool, p_TCB);
     
     OSEnable();
     return 0;

@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rt_list.h"
+#include "rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -103,27 +104,91 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
 }
 
 /**
+  * @brief  Updated a whole list ready to be excecuted.
+  * @param  None
+  * @retval Scheduled list.
+  * @retval 0 No list created.
+  */
+P_LIST rt_list_updated(void){
+    P_TCB task;
+    P_LIST another, prev, cur, list = NULL;
+    for(task = os_rdy_tasks; task; task = task->next){
+        task->remain_ticks--;
+        if(task->remain_ticks > 0){
+
+        }
+        else{
+            // Another ready to be scheduled task
+            another = (P_LIST)rt_pool_alloc(list_pool);
+            another->task = task;
+            another->next = NULL;
+            
+            for(prev = 0, cur = list; cur; prev = cur, cur = cur->next){
+                if(task->remain_ticks < cur->task->remain_ticks){
+                    if(prev){ prev->next = another; }
+                    else{ list = another; }
+                    another->next = cur;
+                    break;
+                }
+            }
+
+            if(!cur){
+                if(prev){
+                    // Reach the last of the list
+                    prev->next = another;
+                }
+                else{
+                    // List is empty
+                    list = another;
+                }
+            } 
+        }
+    }
+    return list;
+}
+
+/**
+  * @brief  Remove first item in the scheduled list.
+  * @param  list: Scheduled list.
+  * @retval Task.
+  * @retval 0 No task has been scheduled.
+  */
+P_TCB rt_rmv_list(P_LIST *list){
+    P_TCB task = NULL;
+    if(*list){
+        task = (*list)->task;
+        rt_pool_free(list_pool, *list);
+        *list = (*list)->next;
+    }
+    return task;
+}
+
+/**
   * @brief  Entry of RTOS.
   * @param  None
   * @retval None
   */
 void rt_sched(void){
+    static P_LIST list = NULL;
+    if(sch_tst == task_running){ while(1); }
+    while(list){ rt_rmv_list(&list); }
+    list = rt_list_updated();
     if(os_tsk.last){ rt_put_last(&os_rdy_tasks, os_tsk.last); }
     os_tsk.last = os_tsk.run;
     os_tsk.next = rt_get_first(&os_rdy_tasks);    
     cur_PSP = &(os_tsk.run->tsk_stack);
     next_PSP = os_tsk.next->tsk_stack;
     /*
-    if(sch_tst == task_running){ while(1); }
-    sch_tst = task_running;
-    
-    os_running_tsk = rt_get_first(&os_rdy_tasks);
-    os_running_tsk->state = Running;
-    os_running_tsk->function();
-    os_running_tsk->state = Ready;
-    rt_put_last(&os_rdy_tasks, os_running_tsk);
-    os_running_tsk = 0;
-
+    if(list){
+        sch_tst = task_running;
+        
+        os_running_tsk = rt_rmv_list(&list);
+        os_running_tsk->state = Running;
+        os_running_tsk->function();
+        os_running_tsk->state = Ready;
+        os_running_tsk->remain_ticks += os_running_tsk->interval;
+        os_running_tsk = 0;
+    }
     sch_tst = task_completed;
     */
 }
