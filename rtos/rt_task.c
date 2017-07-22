@@ -62,6 +62,7 @@ P_TCB rt_tsk_create(P_TCB task, char *stack, uint32_t size){
     p_task->next = NULL;
     p_task->interval = task->interval;
     p_task->remain_ticks = task->interval;
+    p_task->priority = task->priority;
     
     task_id = rt_get_TID();
     if(task_id == 0){ 

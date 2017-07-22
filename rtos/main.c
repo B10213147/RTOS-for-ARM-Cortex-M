@@ -12,11 +12,11 @@ int task1_stack[32];
 int task2_stack[32];
 
 int main(void){
-    OSInit(1000, CM_SysTick, memtest, 5000);  // Time slice = 1ms
-    OSTaskCreate(test2, 0, 5, (char *)task1_stack, sizeof(task1_stack));  
+    OSInit(100, memtest, 5000);  // Time slice = 1ms
+    OSTaskCreate(test1, 0, 2, 1, (char *)task1_stack, sizeof(task1_stack));  
     Rx1 = OSMessageQCreate(5, 5);
     Tx1 = OSMessageQCreate(6, 5);
-    OSTaskCreate(test1, 0, 2, (char *)task2_stack, sizeof(task2_stack));   
+    OSTaskCreate(test2, 0, 10, 0, (char *)task2_stack, sizeof(task2_stack));   
     Rx2 = OSMessageQCreate(7, 5);
     Tx2 = OSMessageQCreate(8, 5);
     OSMessageQWrite(Rx1, "Hello");
