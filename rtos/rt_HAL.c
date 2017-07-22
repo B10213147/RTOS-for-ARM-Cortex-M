@@ -23,6 +23,81 @@ void TI_Blink(void);
 /* Private functions ---------------------------------------------------------*/
 
 /**
+  * @brief  Process stack initialise.
+  * @param  task: TCB of task.
+  * @param  stack: Pointer of the stack memory for this task.
+  * @param  size: Size of stack memory in byte.
+  * @retval None
+  */
+void rt_init_stack(P_TCB task, char *stack, uint32_t size){
+    // Stack 8-byte alignment
+    uint32_t n_stack = ((uint32_t)stack + 0x3U) & ~0x3U;
+    size -= n_stack - (uint32_t)stack;  // Remove unwanted head
+    size &= ~0x3U;  // Remove unwanted tail
+    task->stack = (uint32_t *)n_stack;
+    task->priv_stack = size;
+    
+    // Process Stack Pointer (PSP) value
+    task->tsk_stack = (uint32_t)task->stack + task->priv_stack - 16 * 4;
+    // Stack Frame format
+    // -----------------------
+    // 15 - xPSP
+    // 14 - Return Address
+    // 13 - LR
+    // 12 - R12
+    // 8-11 - R0 - R3
+    // -------
+    // 4-7 - R8 - R11
+    // 0-3 - R4 - R7
+    // -------
+    *((uint32_t *)(task->tsk_stack + (14 << 2))) = (uint32_t)task->function;    // initial PC 
+    *((uint32_t *)(task->tsk_stack + (15 << 2))) = 0x01000000;  // initial xPSR
+}
+
+/**
+  * @brief  Cortex-M context switching. (In assembly.)
+  * @param  None
+  * @retval None
+  */
+__asm void rt_context_switch(void)
+{ // Context switching code
+    // Simple version - assume all tasks are unprivileged
+    // -------------------------
+    // Save current context
+    MRS     R0,     PSP     // Get current process stack pointer value
+    SUBS    R0,     #32     // Allocate 32 bytes for R4 to R11
+    STMIA   R0!,    {R4-R7} // Save R4 to R7 in task stack (4 regs)
+    MOV     R4,     R8      // Copy R8 to R11 to R4 to R7
+    MOV     R5,     R9
+    MOV     R6,     R10
+    MOV     R7,     R11
+    STMIA   R0!,    {R4-R7} // Save R8 to R11 in task stack (4 regs)
+    SUBS    R0,     #32
+    LDR     R1,     =__cpp(&cur_PSP)
+    LDR     R1,     [R1]    // &(os_tsk.run->tsk_stack)
+    STR     R0,     [R1]    // Save PSP value into TCB(tsk_stack)
+    // -------------------------
+    // Load next context
+    LDR     R2,     =__cpp(&os_tsk.next)
+    LDR     R2,     [R2]    // Load next task from os_tsk.next
+    LDR     R3,     =__cpp(&os_tsk.run)
+    STR     R2,     [R3]    // Set os_tsk.run = os_tsk.next
+    LDR     R4,     =__cpp(&next_PSP)
+    LDR     R0,     [R4]    // Load PSP value from next_PSP
+    ADDS    R0,     #16
+    LDMIA   R0!,    {R4-R7} // Load R8 to R11 from task stack (4 regs)
+    MOV     R8,     R4      // Copy to R8 - R11 to R4 to R7
+    MOV     R9,     R5
+    MOV     R10,    R6
+    MOV     R11,    R7
+    MSR     PSP,    R0      // Set PSP to next task
+    SUBS    R0,     #32
+    LDMIA   R0!,    {R4-R7} // Load R4 to R7 from task stack (4 regs)
+    BX      LR              // Return
+    ALIGN 4
+}
+
+/**
   * @brief  Timer6 configuration.
   * @param  ticks: Number of ticks between two interrupts.
   * @retval None
@@ -50,12 +125,8 @@ void SysTick_Handler(void){
         // Schedular
         rt_sched();
         // Sched ends
-        if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-            // Task spent over time slice
-            while(1);
-        }
-        else{
-            return;
+        if(os_tsk.run != os_tsk.next){
+            rt_context_switch();
         }
     }
 }

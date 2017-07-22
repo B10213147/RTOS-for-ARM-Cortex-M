@@ -52,6 +52,22 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
 }
 
 /**
+  * @brief  First time to enable RTOS.
+  * @note   This function should only called in thread mode(main.c)
+  * @note   and only called once.
+  * @param  None
+  * @retval None
+  */
+void OSFirstEnable(void){
+    os_tsk.run = rt_get_first(&os_rdy_tasks);
+    __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
+    __set_CONTROL(0x3);
+    __ISB();
+    OSEnable();
+    os_tsk.run->function();    
+}
+
+/**
   * @brief  Enable RTOS.
   * @param  None
   * @retval None
@@ -98,9 +114,9 @@ void OSDisable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv){
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, char *stack, uint32_t size){
     P_TCB task;
-    task = rt_tsk_create(task_entry, argv, 0);
+    task = rt_tsk_create(task_entry, argv, stack, size);
     if(!task){ return 1; }  // Task create failed
     //rt_put_first(&os_rdy_tasks, task);
     rt_put_last(&os_rdy_tasks, task);

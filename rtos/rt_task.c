@@ -10,12 +10,14 @@
 #include "rtos.h"
 #include "rt_list.h"
 #include "rt_memory.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void __empty(void){
+    while(1);
 }
 
 /* Private variables ---------------------------------------------------------*/
@@ -47,7 +49,7 @@ OS_TID rt_get_TID(void){
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval){
+P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, char *stack, uint32_t size){
     P_TCB p_task;
     OS_TID task_id;
     OSDisable();
@@ -62,17 +64,20 @@ P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval){
     p_task->arg = argv;
     p_task->state = Ready;
     p_task->next = NULL;
-    p_task->interval = interval;
-    p_task->remain_ticks = interval;
+    p_task->interval = 0;
+    p_task->remain_ticks = 0;
     
     task_id = rt_get_TID();
     if(task_id == 0){ 
         // Task create failed
+        rt_mem_free(&system_memory, p_task);
         OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
+
+    rt_init_stack(p_task, stack, size);
     
     OSEnable();    
     return p_task;

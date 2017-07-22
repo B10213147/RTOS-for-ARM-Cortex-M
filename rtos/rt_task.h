@@ -14,7 +14,7 @@
 
 void __empty(void);
 OS_TID rt_get_TID(void);
-P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, int interval);
+P_TCB rt_tsk_create(voidfuncptr task_entry, void *argv, char *stack, uint32_t size);
 uint8_t rt_tsk_delete(OS_TID task_id);
 
 extern void *os_active_TCB[];

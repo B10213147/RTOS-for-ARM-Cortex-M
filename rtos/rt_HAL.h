@@ -9,7 +9,9 @@
 #define RT_HAL_H_
 
 #include <stdint.h>
+#include "rt_TypeDef.h"
 
+void rt_init_stack(P_TCB task, char *stack, uint32_t size);
 void ST_TIM6_Config(uint16_t ticks);
 
 #endif /* RT_HAL_H_ */

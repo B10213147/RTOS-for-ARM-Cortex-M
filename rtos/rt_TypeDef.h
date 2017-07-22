@@ -34,6 +34,12 @@ typedef struct OS_TCB{
     uint32_t *stack;                  /* Pointer to Task Stack memory block      */
 }*P_TCB;
 
+typedef struct OS_TSK{
+    P_TCB last;
+    P_TCB run;
+    P_TCB next;
+}*P_TSK;
+
 typedef struct mail_blk{
     uint32_t begin, end, length;
     char *data;
