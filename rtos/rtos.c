@@ -14,6 +14,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void idle(void){
+    while(1);
 }
 
 /* Private variables ---------------------------------------------------------*/
@@ -38,6 +39,7 @@ uint32_t slice_quantum;
   */
 void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
+    char *idle_stack;
     slice_quantum = slice * (SystemCoreClock / 1000000);
     
 #if (os_trigger_source == CM_SysTick)
@@ -62,7 +64,8 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     while(!task_pool || !list_pool);    // Not enough space in system_memory
     
     // Create idle task
-    OSTaskCreate(idle, 0, idle_interval, 255);
+    idle_stack = rt_mem_alloc(&system_memory, 64);
+    OSTaskCreate(idle, 0, idle_interval, 255, idle_stack, 64);
 }
 
 /**

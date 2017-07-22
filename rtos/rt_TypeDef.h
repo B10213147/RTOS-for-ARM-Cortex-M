@@ -37,7 +37,6 @@ typedef struct OS_TCB{
 }*P_TCB;
 
 typedef struct OS_TSK{
-    P_TCB last;
     P_TCB run;
     P_TCB next;
 }*P_TSK;

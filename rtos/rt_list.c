@@ -182,11 +182,18 @@ P_TCB rt_rmv_list(P_LIST *list){
   */
 void rt_sched(void){
     static P_LIST list = NULL;
+    /*
+    if(os_tsk.run->state == Inactive){
+        rt_tsk_delete(os_tsk.run->task_id);
+        os_tsk.run = os_tsk.next;
+    }
+    */
     while(list){ rt_rmv_list(&list); }
     list = rt_list_updated();
     if(list){
-        os_tsk.last = os_tsk.run; 
+        os_tsk.run->state = Ready;        
         os_tsk.next = rt_rmv_list(&list);
+        os_tsk.next->state = Running;
         os_tsk.next->remain_ticks += os_tsk.next->interval;
         cur_PSP = &(os_tsk.run->tsk_stack);
         next_PSP = os_tsk.next->tsk_stack;

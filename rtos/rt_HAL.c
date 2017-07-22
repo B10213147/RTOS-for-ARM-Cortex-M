@@ -23,27 +23,6 @@ extern uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
 
-#if os_trigger_source == CM_SysTick
-/**
-  * @brief  SysTick interrupt handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void){
-    if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-        SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
-        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
-        // Schedular
-        rt_sched();
-        // Sched ends
-
-        SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
-        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
-    }
-}
-#endif
-
-#if os_platform == STM32F0 && os_trigger_source == ST_TIM6
 /**
   * @brief  Process stack initialise.
   * @param  task: TCB of task.
@@ -119,6 +98,27 @@ __asm void rt_context_switch(void)
     ALIGN 4
 }
 
+#if os_trigger_source == CM_SysTick
+/**
+  * @brief  SysTick interrupt handler.
+  * @param  None
+  * @retval None
+  */
+void SysTick_Handler(void){
+    if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
+        SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
+        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        // Schedular
+        rt_sched();
+        // Sched ends
+
+        SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
+        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+    }
+}
+#endif
+
+#if os_platform == STM32F0 && os_trigger_source == ST_TIM6
 /**
   * @brief  Timer6 configuration.
   * @param  ticks: Number of ticks between two interrupts.
