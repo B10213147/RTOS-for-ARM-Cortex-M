@@ -51,6 +51,15 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     rt_mem_create(&system_memory, memory, size);
 }
 
+void OSFirstEnable(void){
+    os_tsk.run = rt_get_first(&os_rdy_tasks);
+    __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
+    __set_CONTROL(0x3);
+    __ISB();
+    OSEnable();
+    os_tsk.run->function();    
+}
+
 /**
   * @brief  Enable RTOS.
   * @param  None

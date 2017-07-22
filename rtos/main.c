@@ -23,12 +23,7 @@ int main(void){
     Rx2 = rt_mail_create(12);
     Tx2 = rt_mail_create(11);
     OSTaskCreate(__empty, 0, (char *)task4_stack, sizeof(task4_stack));
-    os_tsk.run = rt_get_first(&os_rdy_tasks);
-    __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
-    __set_CONTROL(0x3);
-    __ISB();
-    OSEnable();
-    os_tsk.run->function();
+    OSFirstEnable();
     
     // Should not be here
     rt_mail_write(Rx1, "Hello", 5);

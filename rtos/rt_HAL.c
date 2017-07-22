@@ -20,7 +20,7 @@ void ST_Blink(void);
 void TI_Blink(void);
 
 /* Private variables ---------------------------------------------------------*/
-extern uint32_t cur_PSP, next_PSP;
+extern uint32_t *cur_PSP, next_PSP;
 
 /* Private functions ---------------------------------------------------------*/
 
