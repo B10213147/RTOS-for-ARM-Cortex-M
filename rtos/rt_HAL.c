@@ -65,10 +65,12 @@ __asm void rt_context_switch(void)
     SUBS R0, #32
     LDR R1,=__cpp(&os_tsk.run)
     LDR R2,=__cpp(&cur_PSP)
+    LDR R2,[R2]
     STR R0,[R2] // Save PSP value into PSP_array
     // -------------------------
     // Load next context
     LDR R4,=__cpp(&os_tsk.next)
+    LDR R4,[R4]
     STR R4,[R1] // Set curr_task = next_task
     LDR R3,=__cpp(&next_PSP)
     LDR R0,[R3] // Load PSP value from PSP_array
