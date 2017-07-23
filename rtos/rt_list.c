@@ -197,10 +197,14 @@ void rt_task_dispatch(void){
             // Another ready to be scheduled task
             if(!next_task){
                 next_task = task;
+                if(next > task->remain_ticks + task->interval){
+                    next = task->remain_ticks + task->interval;
+                }
             }
             else if(task->priority < next_task->priority || \
-                (task->priority == next_task->priority &&
-                task->remain_ticks < next_task->remain_ticks)){            
+                (task->priority == next_task->priority && \
+                task->remain_ticks < next_task->remain_ticks)){    
+                next = next_task->remain_ticks; // OS will be triggered in next timeslice
                 next_task = task;
             } 
         }
@@ -214,7 +218,9 @@ void rt_task_dispatch(void){
     else{
         os_tsk.next = os_tsk.run;
     }
-    os_tsk.next->state = Running;    
+    os_tsk.next->state = Running;   
+    if(next < 1 || next == 0x7fffffff){ next = 1; }
+    num_of_empty = next;    
 }
 
 /**

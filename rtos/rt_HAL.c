@@ -108,16 +108,16 @@ __asm void rt_context_switch(void)
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
         rt_start_counter--;
-        //SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
-        //SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        SysTick->LOAD = slice_quantum - 0x10U;  // Calibration
+        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
         // Sched ends
         if(os_tsk.run != os_tsk.next){
             rt_context_switch();
         }
-        //SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
-        //SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
+        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         OSEnable();
     }
 }
