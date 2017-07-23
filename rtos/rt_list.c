@@ -116,7 +116,7 @@ P_LIST rt_list_updated(void){
     P_LIST another, prev, cur, list = NULL;
     for(task = os_rdy_tasks; task; task = task->next){
         task->remain_ticks -= num_of_empty;
-        if(task->remain_ticks > 0){
+        if(task->remain_ticks > 0 || task->state == Running){
             // Waiting time not expired yet
             if(next > task->remain_ticks){
                 next = task->remain_ticks;
@@ -149,7 +149,12 @@ P_LIST rt_list_updated(void){
                     list = another;
                 }
             } 
-            if(next > task->remain_ticks + task->interval){
+            if(list && list->next){
+                next = 1;
+            }
+            //else if(next > task->remain_ticks + task->interval){
+            else{
+                // Only has one task on the list
                 next = task->remain_ticks + task->interval;
             }
         }
@@ -175,6 +180,43 @@ P_TCB rt_rmv_list(P_LIST *list){
     return task;
 }
 
+void rt_task_dispatch(void){
+    os_tsk.run->state = Ready;
+    int next = 0x7fffffff;
+    P_TCB task, next_task = 0;
+    for(task = os_rdy_tasks; task; task = task->next){
+        //task->remain_ticks -= num_of_empty;
+        task->remain_ticks--;
+        if(task->remain_ticks > 0){
+            // Waiting time not expired yet
+            if(next > task->remain_ticks){
+                next = task->remain_ticks;
+            }
+        }
+        else{
+            // Another ready to be scheduled task
+            if(!next_task){
+                next_task = task;
+            }
+            else if(task->priority < next_task->priority || \
+                (task->priority == next_task->priority &&
+                task->remain_ticks < next_task->remain_ticks)){            
+                next_task = task;
+            } 
+        }
+    }
+    if(next_task){
+        next_task->remain_ticks = next_task->interval;
+        os_tsk.next = next_task;
+        cur_PSP = &(os_tsk.run->tsk_stack);
+        next_PSP = os_tsk.next->tsk_stack;
+    }
+    else{
+        os_tsk.next = os_tsk.run;
+    }
+    os_tsk.next->state = Running;    
+}
+
 /**
   * @brief  Entry of RTOS.
   * @param  None
@@ -186,34 +228,10 @@ void rt_sched(void){
     if(os_tsk.run->state == Inactive){
         rt_tsk_delete(os_tsk.run->task_id);
         os_tsk.run = os_tsk.next;
+        __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
     }
     */
-    while(list){ rt_rmv_list(&list); }
-    list = rt_list_updated();
-    if(list){
-        os_tsk.run->state = Ready;        
-        os_tsk.next = rt_rmv_list(&list);
-        os_tsk.next->state = Running;
-        os_tsk.next->remain_ticks += os_tsk.next->interval;
-        cur_PSP = &(os_tsk.run->tsk_stack);
-        next_PSP = os_tsk.next->tsk_stack;
+    if(os_tsk.run){
+        rt_task_dispatch();
     }
-    else{
-        os_tsk.next = os_tsk.run;
-    }
-/*
-    while(list){        
-        os_running_tsk = rt_rmv_list(&list);
-        os_running_tsk->state = Running;
-        os_running_tsk->function();
-        if(os_running_tsk->state != Inactive){
-            os_running_tsk->state = Ready;
-            os_running_tsk->remain_ticks += os_running_tsk->interval;
-            os_running_tsk = 0;
-        }
-        else{
-            rt_tsk_delete(os_running_tsk->task_id);
-        }
-    }
-*/
 }

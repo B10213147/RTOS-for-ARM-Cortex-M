@@ -106,14 +106,16 @@ __asm void rt_context_switch(void)
   */
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-        SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
-        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        //SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
+        //SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
         // Sched ends
-
-        SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
-        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        if(os_tsk.run != os_tsk.next){
+            rt_context_switch();
+        }
+        //SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
+        //SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
     }
 }
 #endif
@@ -135,22 +137,6 @@ void ST_TIM6_Config(uint16_t ticks){
     TIM6->CNT = 0;
     NVIC_EnableIRQ(TIM6_DAC_IRQn);
     TIM6->CR1 |= TIM_CR1_CEN;
-}
-
-/**
-  * @brief  SysTick interrupt handler.
-  * @param  None
-  * @retval None
-  */
-void SysTick_Handler(void){
-    if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-        // Schedular
-        rt_sched();
-        // Sched ends
-        if(os_tsk.run != os_tsk.next){
-            rt_context_switch();
-        }
-    }
 }
 
 /**

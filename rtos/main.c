@@ -13,10 +13,10 @@ int task2_stack[32];
 
 int main(void){
     OSInit(100, memtest, 5000);  // Time slice = 1ms
-    OSTaskCreate(test1, 0, 2, 1, (char *)task1_stack, sizeof(task1_stack));  
+    OSTaskCreate(test1, 0, 2, 0, (char *)task1_stack, sizeof(task1_stack));  
     Rx1 = OSMessageQCreate(5, 5);
     Tx1 = OSMessageQCreate(6, 5);
-    OSTaskCreate(test2, 0, 10, 0, (char *)task2_stack, sizeof(task2_stack));   
+    OSTaskCreate(test2, 0, 10, 1, (char *)task2_stack, sizeof(task2_stack));   
     Rx2 = OSMessageQCreate(7, 5);
     Tx2 = OSMessageQCreate(8, 5);
     OSMessageQWrite(Rx1, "Hello");
@@ -41,20 +41,24 @@ int main(void){
 void test1(void){
     char a[10];
     while(1){
+        
         OSDisable();
         if(!OSMessageQRead(Rx1, a)){
             OSMessageQWrite(Tx1, a);
         }
         OSEnable();
+        
     }
 }
 void test2(void){
     char a[10];
     while(1){
+        
         OSDisable();
         if(!OSMessageQRead(Rx2, a)){
             OSMessageQWrite(Tx2, a);
         }
         OSEnable();
+        
     }
 }
