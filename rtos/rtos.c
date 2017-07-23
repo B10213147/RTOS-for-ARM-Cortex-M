@@ -147,7 +147,7 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
   * @retval None
   */
 void OSTaskDeleteSelf(void){
-    os_running_tsk->state = Inactive;
+    os_tsk.run->state = Inactive;
 }
 
 /**
@@ -159,9 +159,9 @@ void OSTaskDeleteSelf(void){
 uint8_t OSTaskDelete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
-    if(os_running_tsk->function == task){
+    if(os_tsk.run->function == task){
         // Delete running task
-        os_running_tsk->state = Inactive;
+        os_tsk.run->state = Inactive;
         return 0;
     }
     

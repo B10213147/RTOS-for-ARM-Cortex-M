@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_list.h"
 #include "rtos.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -230,13 +231,15 @@ void rt_task_dispatch(void){
   */
 void rt_sched(void){
     static P_LIST list = NULL;
-    /*
     if(os_tsk.run->state == Inactive){
+        rt_rmv_task(&os_rdy_tasks, os_tsk.run);
         rt_tsk_delete(os_tsk.run->task_id);
-        os_tsk.run = os_tsk.next;
-        __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
+        os_tsk.run = os_active_TCB[0];  // // Idle task
+        os_tsk.next = os_active_TCB[0];
+        __set_PSP(os_tsk.run->tsk_stack + 8 * 4);
+        num_of_empty = 1;
+        return;
     }
-    */
     if(os_tsk.run){
         rt_task_dispatch();
     }
