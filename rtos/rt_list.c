@@ -206,7 +206,7 @@ void rt_task_dispatch(void){
         }
     }
     if(next_task){
-        next_task->remain_ticks = next_task->interval;
+        next_task->remain_ticks += next_task->interval;
         os_tsk.next = next_task;
         cur_PSP = &(os_tsk.run->tsk_stack);
         next_PSP = os_tsk.next->tsk_stack;

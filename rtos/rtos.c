@@ -76,11 +76,16 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
   * @retval None
   */
 void OSFirstEnable(void){
-    os_tsk.run = os_active_TCB[0];
+    os_tsk.run = os_active_TCB[0];  // Idle task
     __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
     __set_CONTROL(0x3);
     __ISB();
     OSEnable();
+#if (os_trigger_source == CM_SysTick)
+    SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;  
+#elif (os_trigger_source == ST_TIM6)
+    TIM6->DIER |= TIM_DIER_UIE;  
+#endif 
     os_tsk.run->function();    
 }
 
@@ -92,13 +97,7 @@ void OSFirstEnable(void){
 void OSEnable(void){
     rt_start_counter++;
     if(rt_start_counter > 0){
-        
-#if (os_trigger_source == CM_SysTick)
-        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;  
-#elif (os_trigger_source == ST_TIM6)
-        TIM6->DIER |= TIM_DIER_UIE;  
-#endif        
-
+        __set_PRIMASK(0x0U);
     }
 }
 
@@ -108,12 +107,8 @@ void OSEnable(void){
   * @retval None
   */
 void OSDisable(void){
+    __set_PRIMASK(0x1U);
     rt_start_counter--;
-#if (os_trigger_source == CM_SysTick)
-    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;  
-#elif (os_trigger_source == ST_TIM6)
-    TIM6->DIER &= ~TIM_DIER_UIE;  
-#endif
 }
 
 /* ---------------------------------------------------------------------------*/

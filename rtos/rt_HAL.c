@@ -20,6 +20,7 @@ void TI_Blink(void);
 
 /* Private variables ---------------------------------------------------------*/
 extern uint32_t slice_quantum;
+extern int rt_start_counter;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -106,6 +107,7 @@ __asm void rt_context_switch(void)
   */
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
+        rt_start_counter--;
         //SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
         //SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
@@ -116,6 +118,7 @@ void SysTick_Handler(void){
         }
         //SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
         //SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        OSEnable();
     }
 }
 #endif
