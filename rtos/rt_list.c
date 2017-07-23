@@ -7,6 +7,7 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rt_list.h"
+#include "rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -15,9 +16,10 @@
 /* Private variables ---------------------------------------------------------*/
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
-int sch_tst = task_completed;
 struct OS_TSK os_tsk = {0, 0};  // Running and next task info.
 uint32_t *cur_PSP, next_PSP;
+int num_of_empty = 1;   // Number of timeslices from the last non-empty 
+                        // timeslice to the next one.
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -103,27 +105,139 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
 }
 
 /**
+  * @brief  Updated a whole list ready to be excecuted.
+  * @param  None
+  * @retval Scheduled list.
+  * @retval 0 No list created.
+  */
+P_LIST rt_list_updated(void){
+    int next = 0x7fffffff;
+    P_TCB task;
+    P_LIST another, prev, cur, list = NULL;
+    for(task = os_rdy_tasks; task; task = task->next){
+        task->remain_ticks -= num_of_empty;
+        if(task->remain_ticks > 0 || task->state == Running){
+            // Waiting time not expired yet
+            if(next > task->remain_ticks){
+                next = task->remain_ticks;
+            }
+        }
+        else{
+            // Another ready to be scheduled task
+            another = (P_LIST)rt_pool_alloc(list_pool);
+            another->task = task;
+            another->next = NULL;
+            
+            for(prev = 0, cur = list; cur; prev = cur, cur = cur->next){
+                if(task->priority < cur->task->priority || \
+                    (task->priority == cur->task->priority &&
+                    task->remain_ticks < cur->task->remain_ticks)){
+                    if(prev){ prev->next = another; }
+                    else{ list = another; }
+                    another->next = cur;                    
+                    break;
+                }
+            }
+
+            if(!cur){
+                if(prev){
+                    // Reach the last of the list
+                    prev->next = another;
+                }
+                else{
+                    // List is empty
+                    list = another;
+                }
+            } 
+            if(list && list->next){
+                next = 1;
+            }
+            //else if(next > task->remain_ticks + task->interval){
+            else{
+                // Only has one task on the list
+                next = task->remain_ticks + task->interval;
+            }
+        }
+    }
+    if(next < 1 || next == 0x7fffffff){ next = 1; }
+    num_of_empty = next;
+    return list;
+}
+
+/**
+  * @brief  Remove first item in the scheduled list.
+  * @param  list: Scheduled list.
+  * @retval Task.
+  * @retval 0 No task has been scheduled.
+  */
+P_TCB rt_rmv_list(P_LIST *list){
+    P_TCB task = NULL;
+    if(*list){
+        task = (*list)->task;
+        rt_pool_free(list_pool, *list);
+        *list = (*list)->next;
+    }
+    return task;
+}
+
+void rt_task_dispatch(void){
+    os_tsk.run->state = Ready;
+    int next = 0x7fffffff;
+    P_TCB task, next_task = 0;
+    for(task = os_rdy_tasks; task; task = task->next){
+        //task->remain_ticks -= num_of_empty;
+        task->remain_ticks--;
+        if(task->remain_ticks > 0){
+            // Waiting time not expired yet
+            if(next > task->remain_ticks){
+                next = task->remain_ticks;
+            }
+        }
+        else{
+            // Another ready to be scheduled task
+            if(!next_task){
+                next_task = task;
+                if(next > task->remain_ticks + task->interval){
+                    next = task->remain_ticks + task->interval;
+                }
+            }
+            else if(task->priority < next_task->priority || \
+                (task->priority == next_task->priority && \
+                task->remain_ticks < next_task->remain_ticks)){    
+                next = next_task->remain_ticks; // OS will be triggered in next timeslice
+                next_task = task;
+            } 
+        }
+    }
+    if(next_task){
+        next_task->remain_ticks += next_task->interval;
+        os_tsk.next = next_task;
+        cur_PSP = &(os_tsk.run->tsk_stack);
+        next_PSP = os_tsk.next->tsk_stack;
+    }
+    else{
+        os_tsk.next = os_tsk.run;
+    }
+    os_tsk.next->state = Running;   
+    if(next < 1 || next == 0x7fffffff){ next = 1; }
+    num_of_empty = next;    
+}
+
+/**
   * @brief  Entry of RTOS.
   * @param  None
   * @retval None
   */
 void rt_sched(void){
-    if(os_tsk.last){ rt_put_last(&os_rdy_tasks, os_tsk.last); }
-    os_tsk.last = os_tsk.run;
-    os_tsk.next = rt_get_first(&os_rdy_tasks);    
-    cur_PSP = &(os_tsk.run->tsk_stack);
-    next_PSP = os_tsk.next->tsk_stack;
+    static P_LIST list = NULL;
     /*
-    if(sch_tst == task_running){ while(1); }
-    sch_tst = task_running;
-    
-    os_running_tsk = rt_get_first(&os_rdy_tasks);
-    os_running_tsk->state = Running;
-    os_running_tsk->function();
-    os_running_tsk->state = Ready;
-    rt_put_last(&os_rdy_tasks, os_running_tsk);
-    os_running_tsk = 0;
-
-    sch_tst = task_completed;
+    if(os_tsk.run->state == Inactive){
+        rt_tsk_delete(os_tsk.run->task_id);
+        os_tsk.run = os_tsk.next;
+        __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
+    }
     */
+    if(os_tsk.run){
+        rt_task_dispatch();
+    }
 }

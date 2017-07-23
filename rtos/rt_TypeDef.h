@@ -29,16 +29,22 @@ typedef struct OS_TCB{
     void *arg;
     int interval;
     int remain_ticks;
+    int priority;
+
     uint16_t priv_stack;              /* Private stack size, 0= system assigned  */
     uint32_t tsk_stack;               /* Current task Stack pointer (R13)        */
     uint32_t *stack;                  /* Pointer to Task Stack memory block      */
 }*P_TCB;
 
 typedef struct OS_TSK{
-    P_TCB last;
     P_TCB run;
     P_TCB next;
 }*P_TSK;
+
+typedef struct task_list{
+    struct OS_TCB *task;
+    struct task_list *next;
+}*P_LIST;
 
 typedef struct mail_blk{
     uint32_t begin, end, length;
@@ -55,14 +61,17 @@ typedef struct mem{
     P_MEMB used;
 }*P_MEM;
 
-typedef enum{
-    CM_SysTick,
-    ST_TIM6
-}triggerType;
+typedef struct mempool{
+    char *active_id;
+    char *pool;
+    uint32_t size;
+    uint32_t blocks;
+}*P_POOL;
 
-typedef enum{
-    task_completed,
-    task_running
-}sch_statusType;
+typedef struct msgq{
+    P_MAIL mail;
+    uint32_t size;
+    uint32_t blocks;
+}*P_MSGQ;
 
 #endif /* RT_TYPEDEF_H_ */
