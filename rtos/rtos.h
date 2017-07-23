@@ -8,7 +8,6 @@
 #ifndef RTOS_H_
 #define RTOS_H_
 
-#include "stm32f0xx.h"                  // Device header
 #include "rt_TypeDef.h"
 #include "rt_task.h"
 #include "rt_list.h"
@@ -16,10 +15,23 @@
 #include "rt_memory.h"
 #include "rt_mempool.h"
 
-#define     max_active_TCB      32
+// Platform
+#define     STM32F0             1U
+#define     TM4C123G            2U
+
+#define     os_platform         STM32F0
+
+// Trigger source
+#define     CM_SysTick          1U
+#define     ST_TIM6             2U
+
+#define     os_trigger_source   CM_SysTick
+
+// Maximum number of tasks to manage
+#define     max_active_TCB      16
 
 // Kernel Control
-void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size);
+void OSInit(uint32_t slice, char *memory, uint32_t size);
 void OSEnable(void);
 void OSDisable(void);
 // Thread Control 

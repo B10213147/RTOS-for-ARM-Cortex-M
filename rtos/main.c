@@ -10,11 +10,11 @@ P_MSGQ Tx2;
 char memtest[5000];
 
 int main(void){
-    OSInit(1000, CM_SysTick, memtest, 5000);  // Time slice = 1ms
+    OSInit(100, memtest, 5000);  // Time slice = 1ms
     OSTaskCreate(test1, 0, 2, 1);  
     Rx1 = OSMessageQCreate(5, 5);
     Tx1 = OSMessageQCreate(6, 5);
-    OSTaskCreate(test2, 0, 3, 0);   
+    OSTaskCreate(test2, 0, 10, 0);   
     Rx2 = OSMessageQCreate(7, 5);
     Tx2 = OSMessageQCreate(8, 5);
     OSEnable();

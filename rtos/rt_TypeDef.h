@@ -65,9 +65,4 @@ typedef struct msgq{
     uint32_t blocks;
 }*P_MSGQ;
 
-typedef enum{
-    CM_SysTick,
-    ST_TIM6
-}triggerType;
-
 #endif /* RT_TYPEDEF_H_ */
