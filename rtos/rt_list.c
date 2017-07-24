@@ -16,7 +16,8 @@
 /* Private variables ---------------------------------------------------------*/
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
-int sch_tst = task_completed;
+int num_of_empty = 1;   // Number of timeslices from the last non-empty 
+                        // timeslice to the next one.
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -108,25 +109,30 @@ OS_TID rt_find_TID(P_TCB list, voidfuncptr func){
   * @retval 0 No list created.
   */
 P_LIST rt_list_updated(void){
+    int next = 0x7fffffff;
     P_TCB task;
     P_LIST another, prev, cur, list = NULL;
     for(task = os_rdy_tasks; task; task = task->next){
-        task->remain_ticks--;
+        task->remain_ticks -= num_of_empty;
         if(task->remain_ticks > 0){
-
+            // Waiting time not expired yet
+            if(next > task->remain_ticks){
+                next = task->remain_ticks;
+            }
         }
         else{
             // Another ready to be scheduled task
-            another = (P_LIST)rt_mem_alloc( \
-                        &system_memory, sizeof(struct task_list));
+            another = (P_LIST)rt_pool_alloc(list_pool);
             another->task = task;
             another->next = NULL;
             
             for(prev = 0, cur = list; cur; prev = cur, cur = cur->next){
-                if(task->remain_ticks < cur->task->remain_ticks){
+                if(task->priority < cur->task->priority || \
+                    (task->priority == cur->task->priority &&
+                    task->remain_ticks < cur->task->remain_ticks)){
                     if(prev){ prev->next = another; }
                     else{ list = another; }
-                    another->next = cur;
+                    another->next = cur;                    
                     break;
                 }
             }
@@ -141,8 +147,13 @@ P_LIST rt_list_updated(void){
                     list = another;
                 }
             } 
+            if(next > task->remain_ticks + task->interval){
+                next = task->remain_ticks + task->interval;
+            }
         }
     }
+    if(next < 1 || next == 0x7fffffff){ next = 1; }
+    num_of_empty = next;
     return list;
 }
 
@@ -156,7 +167,7 @@ P_TCB rt_rmv_list(P_LIST *list){
     P_TCB task = NULL;
     if(*list){
         task = (*list)->task;
-        rt_mem_free(&system_memory, *list);
+        rt_pool_free(list_pool, *list);
         *list = (*list)->next;
     }
     return task;
@@ -169,18 +180,19 @@ P_TCB rt_rmv_list(P_LIST *list){
   */
 void rt_sched(void){
     static P_LIST list = NULL;
-    if(sch_tst == task_running){ while(1); }
     while(list){ rt_rmv_list(&list); }
     list = rt_list_updated();
-    if(list){
-        sch_tst = task_running;
-        
+    while(list){        
         os_running_tsk = rt_rmv_list(&list);
         os_running_tsk->state = Running;
         os_running_tsk->function();
-        os_running_tsk->state = Ready;
-        os_running_tsk->remain_ticks += os_running_tsk->interval;
-        os_running_tsk = 0;
+        if(os_running_tsk->state != Inactive){
+            os_running_tsk->state = Ready;
+            os_running_tsk->remain_ticks += os_running_tsk->interval;
+            os_running_tsk = 0;
+        }
+        else{
+            rt_tsk_delete(os_running_tsk->task_id);
+        }
     }
-    sch_tst = task_completed;
 }
