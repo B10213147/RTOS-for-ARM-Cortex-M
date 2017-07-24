@@ -38,8 +38,9 @@ uint32_t slice_quantum;
   */
 void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
+    __set_PRIMASK(0x1U);    // CPU ignores all of interrupt requests
     slice_quantum = slice * (SystemCoreClock / 1000000);
-    
+
 #if (os_trigger_source == CM_SysTick)
      // Systick is a 24-bit downcount counter
     idle_interval = ((0x1U << 25) - 1) / slice_quantum;
@@ -73,13 +74,7 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
 void OSEnable(void){
     rt_start_counter++;
     if(rt_start_counter > 0){
-        
-#if (os_trigger_source == CM_SysTick)
-        SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;  
-#elif (os_trigger_source == ST_TIM6)
-        TIM6->DIER |= TIM_DIER_UIE;  
-#endif        
-
+        __set_PRIMASK(0x0U);
     }
 }
 
@@ -88,13 +83,9 @@ void OSEnable(void){
   * @param  None
   * @retval None
   */
-void OSDisable(void){
+void OSDisable(void){    
+    __set_PRIMASK(0x1U);
     rt_start_counter--;
-#if (os_trigger_source == CM_SysTick)
-    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;  
-#elif (os_trigger_source == ST_TIM6)
-    TIM6->DIER &= ~TIM_DIER_UIE;  
-#endif
 }
 
 /* ---------------------------------------------------------------------------*/
