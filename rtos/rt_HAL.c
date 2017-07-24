@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_HAL.h"
 #include "rt_list.h"
+#include "rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -20,6 +21,7 @@ void TI_Blink(void);
 
 /* Private variables ---------------------------------------------------------*/
 extern uint32_t slice_quantum;
+extern int rt_start_counter;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -31,6 +33,7 @@ extern uint32_t slice_quantum;
   */
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
+        rt_start_counter--;
         SysTick->LOAD = slice_quantum - 0xDU;  // Calibration
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
@@ -39,6 +42,7 @@ void SysTick_Handler(void){
 
         SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        OSEnable();
     }
 }
 #endif
@@ -59,6 +63,7 @@ void ST_TIM6_Config(uint16_t ticks){
     TIM6->ARR = ticks - 1U;
     TIM6->CNT = 0;
     NVIC_EnableIRQ(TIM6_DAC_IRQn);
+    TIM6->DIER |= TIM_DIER_UIE;
     TIM6->CR1 |= TIM_CR1_CEN;
 }
 
@@ -70,12 +75,14 @@ void ST_TIM6_Config(uint16_t ticks){
 void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
+        rt_start_counter--;
         TIM6->ARR = slice_quantum - 1U;
         // Schedular
         rt_sched();
         // Sched ends
         
         TIM6->ARR = num_of_empty * slice_quantum - 1U;
+        OSEnable();
     }
 }
 #endif
