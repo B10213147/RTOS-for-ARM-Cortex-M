@@ -18,7 +18,7 @@
 #include "TM4C123.h"                  // Device header
 #endif
 
-void rt_init_stack(P_TCB task, char *stack, uint32_t size);
+uint8_t rt_init_stack(P_TCB task, char *stack, uint32_t size);
 void ST_TIM6_Config(uint16_t ticks);
 
 #endif /* RT_HAL_H_ */

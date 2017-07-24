@@ -24,6 +24,8 @@ P_POOL task_pool;
 P_POOL list_pool;
 P_POOL stack_pool;
 P_POOL heap_pool;
+P_POOL msgq_pool;
+P_POOL mail_pool;
 uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
@@ -62,9 +64,13 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     rt_mem_create(&system_memory, memory, size);
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
-    stack_pool = rt_pool_create(stack_size + heap_size, max_active_TCB);
+    stack_pool = rt_pool_create(os_stack_size + os_heap_size, max_active_TCB);
     heap_pool = rt_pool_create(sizeof(struct mem), max_active_TCB);
-    while(!task_pool || !list_pool);    // Not enough space in system_memory
+    msgq_pool = rt_pool_create(sizeof(struct msgq), max_active_TCB * 2);
+    mail_pool = rt_pool_create(sizeof(struct mail_blk), max_active_TCB * 2);
+    while(!task_pool || !list_pool || \
+        !stack_pool || !heap_pool || \
+        !msgq_pool || !mail_pool);    // Not enough space in system_memory
     
     // Create idle task
     OSTaskCreate(idle, 0, idle_interval, 255);
@@ -182,7 +188,7 @@ uint8_t OSTaskDelete(voidfuncptr task){
 /* ---------------------------------------------------------------------------*/
 
 /**
-  * @brief  Allocate memory space from system memory.
+  * @brief  Allocate memory space from task stack.
   * @param  size: Size in byte.
   * @retval Pointer to allocated memory.
   */
@@ -195,7 +201,7 @@ void *OSmalloc(uint32_t size){
 }
 
 /**
-  * @brief  Free memory space into system memory.
+  * @brief  Free memory space into task stack.
   * @param  ptr: Pointer to allocated memory.
   * @retval None
   */
@@ -219,8 +225,8 @@ void OSfree(void *ptr){
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     P_MSGQ msg = NULL;
     OSDisable();
-    
-    msg = rt_mem_alloc(&system_memory, sizeof(struct msgq));
+
+    msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
     if(!msg){ 
         OSEnable();
         return NULL; 
@@ -231,7 +237,7 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     
     msg->mail = rt_mail_create(blocks * size);
     if(!msg->mail){
-        rt_mem_free(&system_memory, msg);
+        rt_pool_free(msgq_pool, msg);
         OSEnable();
         return NULL;
     }
@@ -251,7 +257,7 @@ void OSMessageQDistroy(P_MSGQ msg){
     if(msg){
         OSDisable();
         rt_mail_delete(msg->mail);
-        rt_mem_free(&system_memory, msg);
+        rt_pool_free(msgq_pool, msg);
         OSEnable();
     }
 }

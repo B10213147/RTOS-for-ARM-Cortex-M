@@ -74,9 +74,10 @@ P_TCB rt_tsk_create(P_TCB task){
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
 
-    rt_init_stack(p_task, rt_pool_alloc(stack_pool), stack_size + heap_size);
+    while(rt_init_stack(p_task, rt_pool_alloc(stack_pool), \
+                        os_stack_size + os_heap_size));
     p_task->heap = (P_MEM)rt_pool_alloc(heap_pool);
-    rt_mem_create(p_task->heap, (char *)(p_task->stack), heap_size);
+    rt_mem_create(p_task->heap, (char *)(p_task->stack), os_heap_size);
     
     OSEnable();    
     return p_task;
@@ -100,7 +101,8 @@ uint8_t rt_tsk_delete(OS_TID task_id){
         return 1;   
     }
     p_TCB = os_active_TCB[task_id-1];
-    os_active_TCB[task_id-1] = 0;    
+    os_active_TCB[task_id-1] = 0;
+    rt_pool_free(heap_pool, p_TCB->heap);
     rt_pool_free(stack_pool, p_TCB->stack);
     rt_pool_free(task_pool, p_TCB);
     

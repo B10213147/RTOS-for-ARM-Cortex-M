@@ -26,11 +26,11 @@ P_MAIL rt_mail_create(uint32_t size){
     char *data;
     OSDisable();
     
-    p_new = (P_MAIL)rt_mem_alloc(&system_memory, sizeof(struct mail_blk));
+    p_new = (P_MAIL)rt_pool_alloc(mail_pool);
     data = (char *)rt_mem_alloc(&system_memory, size);
     
     if(!p_new || !data){
-        rt_mem_free(&system_memory, p_new);
+        rt_pool_free(mail_pool, p_new);
         rt_mem_free(&system_memory, data);
         OSEnable();
         return NULL;
@@ -53,7 +53,7 @@ P_MAIL rt_mail_create(uint32_t size){
 void rt_mail_delete(P_MAIL mail){
     OSDisable();
     rt_mem_free(&system_memory, mail->data);
-    rt_mem_free(&system_memory, mail);
+    rt_pool_free(mail_pool, mail);
     OSEnable();
 }
 

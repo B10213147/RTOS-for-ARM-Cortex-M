@@ -29,13 +29,16 @@ extern int rt_start_counter;
   * @param  task: TCB of task.
   * @param  stack: Pointer of the stack memory for this task.
   * @param  size: Size of stack memory in byte.
-  * @retval None
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
   */
-void rt_init_stack(P_TCB task, char *stack, uint32_t size){
+uint8_t rt_init_stack(P_TCB task, char *stack, uint32_t size){
+    if(!task || !stack){ return 1; }
     // Stack 8-byte alignment
     uint32_t n_stack = ((uint32_t)stack + 0x3U) & ~0x3U;
     size -= n_stack - (uint32_t)stack;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail
+    if(size == 0){ return 1; }
     task->stack = (uint32_t *)n_stack;
     task->priv_stack = size;
     
@@ -54,8 +57,14 @@ void rt_init_stack(P_TCB task, char *stack, uint32_t size){
     // -------
     *((uint32_t *)(task->tsk_stack + (14 << 2))) = (uint32_t)task->function;    // initial PC 
     *((uint32_t *)(task->tsk_stack + (15 << 2))) = 0x01000000;  // initial xPSR
+    return 0;
 }
 
+/**
+  * @brief  (Assembly)Saving Cortex-M R4-R11 registers into current task context.
+  * @param  None
+  * @retval None
+  */
 __ASM void save_R4_R11(void){
     // Save current context
     MRS     R0,     PSP     // Get current process stack pointer value
@@ -70,6 +79,11 @@ __ASM void save_R4_R11(void){
     ALIGN 4
 }
 
+/**
+  * @brief  (Assembly)Loading Cortex-M R4-R11 registers from next task context.
+  * @param  None
+  * @retval None
+  */
 __ASM void load_R4_R11(void){
     // Load next context
     MRS     R0,     PSP     // Get next process stack pointer value
@@ -149,12 +163,14 @@ void ST_TIM6_Config(uint16_t ticks){
 void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
+        rt_start_counter--;
         TIM6->ARR = slice_quantum - 1U;
         // Schedular
         rt_sched();
         // Sched ends
         
         TIM6->ARR = num_of_empty * slice_quantum - 1U;
+        OSEnable();
     }
 }
 #endif

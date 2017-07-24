@@ -180,14 +180,18 @@ P_TCB rt_rmv_list(P_LIST *list){
     return task;
 }
 
+/**
+  * @brief  Dispatch task for next timeslice.
+  * @param  None
+  * @retval None
+  */
 void rt_task_dispatch(void){
     int next = 0x7fffffff;
     P_TCB task, next_task = NULL;
     
     os_tsk.run->state = Ready;
     for(task = os_rdy_tasks; task; task = task->next){
-        //task->remain_ticks -= num_of_empty;
-        task->remain_ticks--;
+        task->remain_ticks -= num_of_empty;
         if(task->remain_ticks > 0){
             // Waiting time not expired yet
             if(next > task->remain_ticks){
@@ -215,6 +219,7 @@ void rt_task_dispatch(void){
         os_tsk.next = next_task;
     }
     else{
+        // No task changing
         os_tsk.next = os_tsk.run;
     }
     os_tsk.next->state = Running;   
@@ -229,11 +234,17 @@ void rt_task_dispatch(void){
   */
 void rt_sched(void){
     if(os_tsk.run->state == Inactive){
+        // Delete current task
         rt_rmv_task(&os_rdy_tasks, os_tsk.run);
         rt_tsk_delete(os_tsk.run->task_id);
-        os_tsk.run = os_active_TCB[0];  // // Idle task
-        os_tsk.next = os_active_TCB[0];
+        for(P_TCB task = os_rdy_tasks; task; task = task->next){
+            task->remain_ticks -= num_of_empty;
+        }
+        os_tsk.run = os_active_TCB[0];  // Idle task
+        os_tsk.next = os_active_TCB[0]; // Avoid context switch
         __set_PSP(os_tsk.run->tsk_stack + 8 * 4);
+        os_tsk.run->state = Running;
+        os_tsk.run->remain_ticks = os_tsk.run->interval;
         num_of_empty = 1;
         return;
     }
