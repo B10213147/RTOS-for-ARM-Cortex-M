@@ -22,6 +22,7 @@ int rt_start_counter = 0;
 struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
+P_POOL stack_pool;
 uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
@@ -39,7 +40,6 @@ uint32_t slice_quantum;
   */
 void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
-    char *idle_stack;
     slice_quantum = slice * (SystemCoreClock / 1000000);
     
 #if (os_trigger_source == CM_SysTick)
@@ -61,11 +61,11 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     rt_mem_create(&system_memory, memory, size);
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
+    stack_pool = rt_pool_create(stack_size, max_active_TCB);
     while(!task_pool || !list_pool);    // Not enough space in system_memory
     
     // Create idle task
-    idle_stack = rt_mem_alloc(&system_memory, 64);
-    OSTaskCreate(idle, 0, idle_interval, 255, idle_stack, 64);
+    OSTaskCreate(idle, 0, idle_interval, 255);
 }
 
 /**
@@ -124,7 +124,7 @@ void OSDisable(void){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority, char *stack, uint32_t size){
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
     struct OS_TCB task;
     P_TCB n_task;
     
@@ -133,7 +133,7 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
     task.interval = interval;
     task.priority = priority;
     
-    n_task = rt_tsk_create(&task, stack, size);
+    n_task = rt_tsk_create(&task);
     if(!n_task){ return 1; }  // Task create failed
     rt_put_first(&os_rdy_tasks, n_task);
     //rt_put_last(&os_rdy_tasks, n_task);

@@ -45,7 +45,7 @@ OS_TID rt_get_TID(void){
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
-P_TCB rt_tsk_create(P_TCB task, char *stack, uint32_t size){
+P_TCB rt_tsk_create(P_TCB task){
     P_TCB p_task;
     OS_TID task_id;
     OSDisable();
@@ -74,7 +74,7 @@ P_TCB rt_tsk_create(P_TCB task, char *stack, uint32_t size){
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
 
-    rt_init_stack(p_task, stack, size);
+    rt_init_stack(p_task, rt_pool_alloc(stack_pool), stack_size);
     
     OSEnable();    
     return p_task;
@@ -98,7 +98,8 @@ uint8_t rt_tsk_delete(OS_TID task_id){
         return 1;   
     }
     p_TCB = os_active_TCB[task_id-1];
-    os_active_TCB[task_id-1] = 0;
+    os_active_TCB[task_id-1] = 0;    
+    rt_pool_free(stack_pool, p_TCB->stack);
     rt_pool_free(task_pool, p_TCB);
     
     OSEnable();

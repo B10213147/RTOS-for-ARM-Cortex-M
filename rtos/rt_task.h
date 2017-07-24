@@ -11,7 +11,7 @@
 #include "rt_TypeDef.h"
 
 OS_TID rt_get_TID(void);
-P_TCB rt_tsk_create(P_TCB task, char *stack, uint32_t size);
+P_TCB rt_tsk_create(P_TCB task);
 uint8_t rt_tsk_delete(OS_TID task_id);
 
 extern void *os_active_TCB[];
