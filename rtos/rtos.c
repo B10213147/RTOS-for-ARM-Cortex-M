@@ -23,6 +23,7 @@ struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
 P_POOL stack_pool;
+P_POOL heap_pool;
 uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
@@ -61,7 +62,8 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     rt_mem_create(&system_memory, memory, size);
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
-    stack_pool = rt_pool_create(stack_size, max_active_TCB);
+    stack_pool = rt_pool_create(stack_size + heap_size, max_active_TCB);
+    heap_pool = rt_pool_create(sizeof(struct mem), max_active_TCB);
     while(!task_pool || !list_pool);    // Not enough space in system_memory
     
     // Create idle task
@@ -187,7 +189,7 @@ uint8_t OSTaskDelete(voidfuncptr task){
 void *OSmalloc(uint32_t size){
     char *mem = NULL;
     OSDisable();
-    mem = (char *)rt_mem_alloc(&system_memory, size);
+    mem = (char *)rt_mem_alloc(os_tsk.run->heap, size);
     OSEnable();
     return mem;
 }
@@ -199,7 +201,7 @@ void *OSmalloc(uint32_t size){
   */
 void OSfree(void *ptr){
     OSDisable();
-    rt_mem_free(&system_memory, ptr);
+    rt_mem_free(os_tsk.run->heap, ptr);
     OSEnable();
 }
 

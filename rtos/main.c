@@ -8,10 +8,10 @@ P_MSGQ Rx1;
 P_MSGQ Tx1;
 P_MSGQ Rx2;
 P_MSGQ Tx2;
-char memtest[20000];
+int memtest[10000];
 
 int main(void){
-    OSInit(100, memtest, 20000);  // Time slice = 1ms
+    OSInit(100, (char *)memtest, sizeof(memtest));  // Time slice = 1ms
     OSTaskCreate(test1, 0, 30, 0);  
     Rx1 = OSMessageQCreate(5, 5);
     Tx1 = OSMessageQCreate(6, 5);
@@ -48,8 +48,9 @@ void test2(void){
     }
 }
 void test3(void){
-    char a[10];
-    while(1){        
+    char *a;
+    while(1){    
+        a = (char *)OSmalloc(10);
         OSDisable();
         if(!OSMessageQRead(Tx1, a)){
             OSMessageQWrite(Rx2, a);
@@ -57,6 +58,7 @@ void test3(void){
         if(!OSMessageQRead(Tx2, a)){
             OSMessageQWrite(Rx1, a);
         }
-        OSEnable();        
+        OSEnable();  
+        OSfree(a);
     }
 }

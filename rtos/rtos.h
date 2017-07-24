@@ -30,7 +30,8 @@
 // Maximum number of tasks to manage
 #define     max_active_TCB      8
 
-#define     stack_size      1024  // Size in bytes
+#define     stack_size      512  // Size in bytes
+#define     heap_size       512  // Size in bytes
 
 // Kernel Control
 void OSInit(uint32_t slice, char *memory, uint32_t size);
@@ -54,5 +55,6 @@ extern struct mem system_memory;
 extern P_POOL task_pool;
 extern P_POOL list_pool;
 extern P_POOL stack_pool;
+extern P_POOL heap_pool;
 
 #endif /* RTOS_H_ */

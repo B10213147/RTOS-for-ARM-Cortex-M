@@ -74,7 +74,9 @@ P_TCB rt_tsk_create(P_TCB task){
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
 
-    rt_init_stack(p_task, rt_pool_alloc(stack_pool), stack_size);
+    rt_init_stack(p_task, rt_pool_alloc(stack_pool), stack_size + heap_size);
+    p_task->heap = (P_MEM)rt_pool_alloc(heap_pool);
+    rt_mem_create(p_task->heap, (char *)(p_task->stack), heap_size);
     
     OSEnable();    
     return p_task;
