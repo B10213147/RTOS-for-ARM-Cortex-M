@@ -18,7 +18,6 @@
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
 struct OS_TSK os_tsk = {0, 0};  // Running and next task info.
-uint32_t *cur_PSP, next_PSP;
 int num_of_empty = 1;   // Number of timeslices from the last non-empty 
                         // timeslice to the next one.
 
@@ -182,9 +181,10 @@ P_TCB rt_rmv_list(P_LIST *list){
 }
 
 void rt_task_dispatch(void){
-    os_tsk.run->state = Ready;
     int next = 0x7fffffff;
-    P_TCB task, next_task = 0;
+    P_TCB task, next_task = NULL;
+    
+    os_tsk.run->state = Ready;
     for(task = os_rdy_tasks; task; task = task->next){
         //task->remain_ticks -= num_of_empty;
         task->remain_ticks--;
@@ -213,8 +213,6 @@ void rt_task_dispatch(void){
     if(next_task){
         next_task->remain_ticks += next_task->interval;
         os_tsk.next = next_task;
-        cur_PSP = &(os_tsk.run->tsk_stack);
-        next_PSP = os_tsk.next->tsk_stack;
     }
     else{
         os_tsk.next = os_tsk.run;
@@ -230,7 +228,6 @@ void rt_task_dispatch(void){
   * @retval None
   */
 void rt_sched(void){
-    static P_LIST list = NULL;
     if(os_tsk.run->state == Inactive){
         rt_rmv_task(&os_rdy_tasks, os_tsk.run);
         rt_tsk_delete(os_tsk.run->task_id);
