@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_HAL.h"
 #include "rt_list.h"
+#include "rtos.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -152,6 +153,7 @@ void ST_TIM6_Config(uint16_t ticks){
     TIM6->ARR = ticks - 1U;
     TIM6->CNT = 0;
     NVIC_EnableIRQ(TIM6_DAC_IRQn);
+    TIM6->DIER |= TIM_DIER_UIE;
     TIM6->CR1 |= TIM_CR1_CEN;
 }
 
