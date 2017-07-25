@@ -22,7 +22,7 @@ void *os_active_TCB[max_active_TCB];
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Get a none-occupied id from os_active_TCB
+  * @brief  Get a none-occupied id from os_active_TCB.
   * @param  None
   * @retval None-occupied id.
   * @retval 0 os_active_TCB is full.
@@ -40,8 +40,6 @@ OS_TID rt_get_TID(void){
 /**
   * @brief  Create a task control block.
   * @param  task: Pointer of waiting created task.
-  * @param  stack: Pointer of the stack memory for this task.
-  * @param  size: Size of stack memory in byte.
   * @retval Pointer of task control block.
   * @retval NULL - No TCB created.
   */
