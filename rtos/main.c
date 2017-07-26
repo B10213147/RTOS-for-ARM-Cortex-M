@@ -9,21 +9,16 @@ P_MSGQ Tx1;
 P_MSGQ Rx2;
 P_MSGQ Tx2;
 int memtest[10000];
-extern uint32_t MSP_bottom;
 
 int main(void){
-    MSP_bottom = __get_MSP();
     OSInit(10, (char *)memtest, sizeof(memtest));  // Time slice = 1ms
-    OSTaskCreate(test1, 0, 30, 0); 
-    __set_PRIMASK(0x0U);    
+    OSTaskCreate(test1, 0, 30, 0);
     Rx1 = OSMessageQCreate(5, 5);
     Tx1 = OSMessageQCreate(6, 5);
-    OSTaskCreate(test2, 0, 60, 1);  
-    __set_PRIMASK(0x0U);  
+    OSTaskCreate(test2, 0, 60, 1);
     Rx2 = OSMessageQCreate(7, 5);
     Tx2 = OSMessageQCreate(8, 5);
-    OSTaskCreate(test3, 0, 15, 2); 
-    __set_PRIMASK(0x0U);
+    OSTaskCreate(test3, 0, 15, 2);
     OSMessageQWrite(Rx1, "Hello");
     OSFirstEnable();
     
