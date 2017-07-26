@@ -113,6 +113,49 @@ void rt_context_switch(void){
     load_R4_R11();
 }
 
+// SVC handler - Assembly wrapper to extract
+// stack frame starting address
+__asm void SVC_Handler(void)
+{
+    MOVS    r0, #4
+    MOV     r1, LR
+    TST     r0, r1                  ; Check EXC_RETURN
+    BEQ     stacking_used_MSP
+    MRS     R0,PSP                  ; Read PSP
+    B       end_reading_SP
+stacking_used_MSP
+    MRS     R0,MSP                  ; Read MSP
+end_reading_SP
+    LDR     R1,[R0,#24]             ; Read Saved PC from Stack
+    SUBS    R1,R1,#2                ; Point to SVC Instruction
+    LDRB    R1,[R1]                 ; Load SVC Number
+    CMP     R1,#0
+    
+    MOV     LR,R4
+    LDMIA   R0,{R0-R3,R4}           ; Read R0-R3,R12 from stack 
+    MOV     R12,R4
+    MOV     R4,LR
+    BLX     R12                     ; Call SVC Function 
+
+    MOVS    r3, #4
+    MOV     r4, LR
+    TST     r3, r4                  ; Check EXC_RETURN
+    BEQ     used_MSP
+    MRS     R3,PSP                  ; Read PSP
+    STMIA   R3!,{R0-R2}             ; Store return values 
+    MOVS    R0,#:NOT:0xFFFFFFFD     ; Set EXC_RETURN value
+    B       ready2return
+used_MSP
+    MRS     R3,MSP                  ; Read MSP
+    STMIA   R3!,{R0-R2}             ; Store return values 
+    MOVS    R0,#:NOT:0xFFFFFFF9     ; Set EXC_RETURN value 
+ready2return    
+    MVNS    R0,R0
+    BX      R0                      ; RETI to Thread Mode
+
+    ALIGN
+}
+
 #if os_trigger_source == CM_SysTick
 /**
   * @brief  SysTick interrupt handler.
