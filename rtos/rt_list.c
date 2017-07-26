@@ -185,7 +185,7 @@ P_TCB rt_rmv_list(P_LIST *list){
   * @param  None
   * @retval None
   */
-void rt_task_dispatch(void){
+void rt_task_dispatch(uint32_t checklr){
     int next = 0x7fffffff;
     P_TCB task, next_task = NULL;
     
@@ -214,7 +214,7 @@ void rt_task_dispatch(void){
             } 
         }
     }
-    if(next_task){
+    if(next_task && checklr == 0){
         next_task->remain_ticks += next_task->interval;
         os_tsk.next = next_task;
     }
@@ -232,7 +232,7 @@ void rt_task_dispatch(void){
   * @param  None
   * @retval None
   */
-void rt_sched(void){
+void rt_sched(uint32_t checklr){
     if(os_tsk.run->state == Inactive){
         // Delete current task
         rt_rmv_task(&os_rdy_tasks, os_tsk.run);
@@ -249,6 +249,6 @@ void rt_sched(void){
         return;
     }
     if(os_tsk.run){
-        rt_task_dispatch();
+        rt_task_dispatch(checklr);
     }
 }

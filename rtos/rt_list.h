@@ -15,7 +15,7 @@ void rt_put_last(P_TCB *list, P_TCB task);
 P_TCB rt_get_first(P_TCB *list);
 void rt_rmv_task(P_TCB *list, P_TCB task);
 OS_TID rt_find_TID(P_TCB list, voidfuncptr func);
-void rt_sched(void);
+void rt_sched(uint32_t checklr);
 
 extern struct OS_TCB *os_running_tsk;
 extern struct OS_TCB *os_rdy_tasks;

@@ -7,10 +7,49 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rtos.h"
-#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
+#define SVC_0_1(f, t)                   \
+__svc_indirect(0)   t _##f(t(*)());     \
+                    t    f(void);       \
+__attribute__((always_inline))          \
+static __inline     t __##f(void){      \
+    return _##f(f);                     \
+}
+
+#define SVC_1_0(f, t, t1)                       \
+__svc_indirect(0)   t _##f(t(*)(t1), t1);       \
+                    t    f(t1 a1);              \
+__attribute__((always_inline))                  \
+static __inline     t __##f(t1 a1){             \
+    _##f(f, a1);                                \
+}
+
+#define SVC_1_1(f, t, t1)                       \
+__svc_indirect(0)   t _##f(t(*)(t1), t1);       \
+                    t    f(t1 a1);              \
+__attribute__((always_inline))                  \
+static __inline     t __##f(t1 a1){             \
+    return _##f(f, a1);                         \
+}                   
+
+#define SVC_2_1(f, t, t1, t2)                           \
+__svc_indirect(0)   t _##f(t(*)(t1, t2), t1, t2);       \
+                    t    f(t1 a1, t2 a2);               \
+__attribute__((always_inline))                          \
+static __inline     t __##f(t1 a1, t2 a2){              \
+    return _##f(f, a1, a2);                             \
+}
+
+#define SVC_4_1(f, t, t1, t2, t3, t4)                               \
+__svc_indirect(0)   t _##f(t(*)(t1, t2, t3, t4), t1, t2, t3, t4);   \
+                    t    f(t1 a1, t2 a2, t3 a3, t4 a4);             \
+__attribute__((always_inline))                                      \
+static __inline     t __##f(t1 a1, t2 a2, t3 a3, t4 a4){            \
+    return _##f(f, a1, a2, a3, a4);                                 \
+}
+
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void idle(void){
@@ -23,17 +62,18 @@ struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
 P_POOL stack_pool;
-P_POOL heap_pool;
 P_POOL msgq_pool;
 P_POOL mail_pool;
 uint32_t slice_quantum;
+extern uint32_t MSP_bottom;
 
 /* Private functions ---------------------------------------------------------*/
 
 /* ---------------------------------------------------------------------------*/
 /*                              Kernel Control                                */
 /* ---------------------------------------------------------------------------*/
-  
+
+//  Kernel Control Public API
 /**
   * @brief  Start real time operating system.
   * @param  slice: Timeslice in microseconds.
@@ -43,18 +83,9 @@ uint32_t slice_quantum;
   */
 void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
-    __set_PRIMASK(0x1U);    // CPU ignores all of interrupt requests
+    
+    MSP_bottom = __get_MSP();
     slice_quantum = slice * (SystemCoreClock / 1000000);
-
-#if (os_trigger_source == CM_SysTick)
-     // Systick is a 24-bit downcount counter
-    idle_interval = ((0x1U << 25) - 1) / slice_quantum;
-    while(SysTick_Config(slice_quantum)); 
-#elif (os_trigger_source == ST_TIM6)
-    // Timer6 is a 16-bit upcount counter
-    idle_interval = ((0x1U << 17) - 1) / slice_quantum;
-    ST_TIM6_Config(slice_quantum);    
-#endif
 
     // Initialize task TCB pointers to NULL.
     for(int i = 0; i < max_active_TCB; i++){
@@ -65,15 +96,27 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
     stack_pool = rt_pool_create(os_stack_size + os_heap_size, max_active_TCB);
-    heap_pool = rt_pool_create(sizeof(struct mem), max_active_TCB);
     msgq_pool = rt_pool_create(sizeof(struct msgq), max_active_TCB * 2);
     mail_pool = rt_pool_create(sizeof(struct mail_blk), max_active_TCB * 2);
     while(!task_pool || !list_pool || \
-        !stack_pool || !heap_pool || \
-        !msgq_pool || !mail_pool);    // Not enough space in system_memory
+        !stack_pool || !msgq_pool || \
+        !mail_pool);    // Not enough space in system_memory
     
     // Create idle task
     OSTaskCreate(idle, 0, idle_interval, 255);
+    
+    NVIC_SetPriority(SysTick_IRQn, 0x0);
+    NVIC_SetPriority(SVC_IRQn, 0x1);
+    
+#if (os_trigger_source == CM_SysTick)
+     // Systick is a 24-bit downcount counter
+    idle_interval = ((0x1U << 25) - 1) / slice_quantum;
+    while(SysTick_Config(slice_quantum)); 
+#elif (os_trigger_source == ST_TIM6)
+    // Timer6 is a 16-bit upcount counter
+    idle_interval = ((0x1U << 17) - 1) / slice_quantum;
+    ST_TIM6_Config(slice_quantum);    
+#endif    
 }
 
 /**
@@ -122,19 +165,13 @@ void OSDisable(void){
 /* ---------------------------------------------------------------------------*/
 /*                              Thread Control                                */
 /* ---------------------------------------------------------------------------*/
+SVC_4_1(svcTaskCreate, uint8_t, voidfuncptr, void*, int, int)
+SVC_1_1(svcTaskDelete, uint8_t, voidfuncptr)
 
-/**
-  * @brief  Create task for RTOS.
-  * @param  task_entry: Function name.
-  * @param  argv: Function's arguments.
-  * @param  interval: Number of timeslices in which the task is scheduled once.
-  * @param  priority: Priority of task. (Lower value means higer priority)
-  * @retval 0 Function succeeded.
-  * @retval 1 Function failed.
-  */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
+uint8_t svcTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
     struct OS_TCB task;
     P_TCB n_task;
+    __set_PRIMASK(0x1U);
     
     task.function = task_entry;
     task.arg = argv;
@@ -146,7 +183,45 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
     rt_put_first(&os_rdy_tasks, n_task);
     //rt_put_last(&os_rdy_tasks, n_task);
 
+    __set_PRIMASK(0x0U);
     return 0;
+}
+
+uint8_t svcTaskDelete(voidfuncptr task){
+    P_TCB p_TCB;
+    OS_TID tid;
+    __set_PRIMASK(0x1U);
+    
+    if(os_tsk.run->function == task){
+        // Delete running task
+        os_tsk.run->state = Inactive;
+        return 0;
+    }
+    
+    // Search ready list
+    tid = rt_find_TID(os_rdy_tasks, task);
+    if(tid != 0){
+        p_TCB = os_active_TCB[tid-1];
+        p_TCB->state = Inactive;
+        rt_rmv_task(&os_rdy_tasks, p_TCB);
+    }
+    
+    __set_PRIMASK(0x0U);    
+    return rt_tsk_delete(tid);
+}
+
+//  Thread Control Public API
+/**
+  * @brief  Create task for RTOS.
+  * @param  task_entry: Function name.
+  * @param  argv: Function's arguments.
+  * @param  interval: Number of timeslices in which the task is scheduled once.
+  * @param  priority: Priority of task. (Lower value means higer priority)
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
+    return __svcTaskCreate(task_entry, argv, interval, priority);
 }
 
 /**
@@ -165,39 +240,37 @@ void OSTaskDeleteSelf(void){
   * @retval 1 Function failed.
   */
 uint8_t OSTaskDelete(voidfuncptr task){
-    P_TCB p_TCB;
-    OS_TID tid;
-    if(os_tsk.run->function == task){
-        // Delete running task
-        os_tsk.run->state = Inactive;
-        return 0;
-    }
-    
-    // Search ready list
-    tid = rt_find_TID(os_rdy_tasks, task);
-    if(tid != 0){
-        p_TCB = os_active_TCB[tid-1];
-        p_TCB->state = Inactive;
-        rt_rmv_task(&os_rdy_tasks, p_TCB);
-    }    
-    return rt_tsk_delete(tid);
+    return __svcTaskDelete(task);
 }
 
 /* ---------------------------------------------------------------------------*/
 /*                              Memory Control                                */
 /* ---------------------------------------------------------------------------*/
+SVC_1_1(svcMalloc,  void*,  uint32_t)
+SVC_1_0(svcFree,    void,   void*)
+    
+void *svcMalloc(uint32_t size){
+    char *mem = NULL;
+    __set_PRIMASK(0x1U);
+    mem = (char *)rt_mem_alloc((P_MEM)(os_tsk.run->stack), size);
+    __set_PRIMASK(0x0U);
+    return mem;
+}
 
+void svcFree(void *ptr){
+    __set_PRIMASK(0x1U);
+    rt_mem_free((P_MEM)(os_tsk.run->stack), ptr);
+    __set_PRIMASK(0x0U);
+}
+
+//  Memory Control Public API
 /**
   * @brief  Allocate memory space from task stack.
   * @param  size: Size in byte.
   * @retval Pointer to allocated memory.
   */
 void *OSmalloc(uint32_t size){
-    char *mem = NULL;
-    OSDisable();
-    mem = (char *)rt_mem_alloc(os_tsk.run->heap, size);
-    OSEnable();
-    return mem;
+    return __svcMalloc(size);
 }
 
 /**
@@ -206,15 +279,65 @@ void *OSmalloc(uint32_t size){
   * @retval None
   */
 void OSfree(void *ptr){
-    OSDisable();
-    rt_mem_free(os_tsk.run->heap, ptr);
-    OSEnable();
+    __svcFree(ptr);
 }
 
 /* ---------------------------------------------------------------------------*/
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
+SVC_2_1(svcMessageCreate,   P_MSGQ,  uint32_t, uint32_t)
+SVC_1_0(svcMessageDistroy,  void,    P_MSGQ)
+SVC_2_1(svcMessageWrite,    uint8_t, P_MSGQ, void*)
+SVC_2_1(svcMessageRead,     uint8_t, P_MSGQ, void*)
+    
+P_MSGQ svcMessageCreate(uint32_t size, uint32_t blocks){
+    P_MSGQ msg = NULL;
+    __set_PRIMASK(0x1U);
+    
+    msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
+    if(!msg){ return NULL; }
+    
+    // 4-byte alignment
+    size = (size + 3U) & ~3U;
+    
+    msg->mail = rt_mail_create(blocks * size);
+    if(!msg->mail){
+        rt_pool_free(msgq_pool, msg);
+        return NULL;
+    }
+    msg->size = size;
+    msg->blocks = blocks;
+    
+    __set_PRIMASK(0x0U);
+    return msg;
+}
 
+void svcMessageDistroy(P_MSGQ msg){
+    __set_PRIMASK(0x1U);
+    if(msg){
+        rt_mail_delete(msg->mail);
+        rt_pool_free(msgq_pool, msg);
+    }
+    __set_PRIMASK(0x0U);
+}
+
+uint8_t svcMessageWrite(P_MSGQ msg, void *data){
+    __set_PRIMASK(0x1U);
+    int i = rt_mail_write(msg->mail, data, msg->size);
+    __set_PRIMASK(0x0U);
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
+}
+
+uint8_t svcMessageRead(P_MSGQ msg, void *data){
+    __set_PRIMASK(0x1U);
+    int i = rt_mail_read(msg->mail, data, msg->size);
+    __set_PRIMASK(0x0U);
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
+}
+
+//  MessageQ Control Public API
 /**
   * @brief  Create Message Queue.
   * @param  size: Size of each block in byte.
@@ -223,29 +346,7 @@ void OSfree(void *ptr){
   * @retval NULL - No message queue created.
   */
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
-    P_MSGQ msg = NULL;
-    OSDisable();
-
-    msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
-    if(!msg){ 
-        OSEnable();
-        return NULL; 
-    }
-    
-    // 4-byte alignment
-    size = (size + 3U) & ~3U;
-    
-    msg->mail = rt_mail_create(blocks * size);
-    if(!msg->mail){
-        rt_pool_free(msgq_pool, msg);
-        OSEnable();
-        return NULL;
-    }
-    msg->size = size;
-    msg->blocks = blocks;
-    
-    OSEnable();
-    return msg;
+    return __svcMessageCreate(size, blocks);
 }
 
 /**
@@ -254,12 +355,7 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
   * @retval None
   */
 void OSMessageQDistroy(P_MSGQ msg){
-    if(msg){
-        OSDisable();
-        rt_mail_delete(msg->mail);
-        rt_pool_free(msgq_pool, msg);
-        OSEnable();
-    }
+    __svcMessageDistroy(msg);
 }
 
 /**
@@ -270,9 +366,7 @@ void OSMessageQDistroy(P_MSGQ msg){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
-    int i = rt_mail_write(msg->mail, data, msg->size);
-    if(i == msg->size){ return 0; }
-    else{ return 1; }
+    return __svcMessageWrite(msg, data);
 }
 
 /**
@@ -283,7 +377,5 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    int i = rt_mail_read(msg->mail, data, msg->size);
-    if(i == msg->size){ return 0; }
-    else{ return 1; }
+    return __svcMessageRead(msg, data);
 }
