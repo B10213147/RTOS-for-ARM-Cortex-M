@@ -23,7 +23,6 @@ struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
 P_POOL stack_pool;
-P_POOL heap_pool;
 P_POOL msgq_pool;
 P_POOL mail_pool;
 uint32_t slice_quantum;
@@ -65,12 +64,11 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
     stack_pool = rt_pool_create(os_stack_size + os_heap_size, max_active_TCB);
-    heap_pool = rt_pool_create(sizeof(struct mem), max_active_TCB);
     msgq_pool = rt_pool_create(sizeof(struct msgq), max_active_TCB * 2);
     mail_pool = rt_pool_create(sizeof(struct mail_blk), max_active_TCB * 2);
     while(!task_pool || !list_pool || \
-        !stack_pool || !heap_pool || \
-        !msgq_pool || !mail_pool);    // Not enough space in system_memory
+        !stack_pool || !msgq_pool || \
+        !mail_pool);    // Not enough space in system_memory
     
     // Create idle task
     OSTaskCreate(idle, 0, idle_interval, 255);
@@ -195,7 +193,7 @@ uint8_t OSTaskDelete(voidfuncptr task){
 void *OSmalloc(uint32_t size){
     char *mem = NULL;
     OSDisable();
-    mem = (char *)rt_mem_alloc(os_tsk.run->heap, size);
+    mem = (char *)rt_mem_alloc((P_MEM)(os_tsk.run->stack), size);
     OSEnable();
     return mem;
 }
@@ -207,7 +205,7 @@ void *OSmalloc(uint32_t size){
   */
 void OSfree(void *ptr){
     OSDisable();
-    rt_mem_free(os_tsk.run->heap, ptr);
+    rt_mem_free((P_MEM)(os_tsk.run->stack), ptr);
     OSEnable();
 }
 
