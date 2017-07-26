@@ -7,10 +7,49 @@
  
 /* Includes ------------------------------------------------------------------*/
 #include "rtos.h"
-#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
+#define SVC_0_1(f, t)                   \
+__svc_indirect(0)   t _##f(t(*)());     \
+                    t    f(void);       \
+__attribute__((always_inline))          \
+static __inline     t __##f(void){      \
+    return _##f(f);                     \
+}
+
+#define SVC_1_0(f, t, t1)                       \
+__svc_indirect(0)   t _##f(t(*)(t1), t1);       \
+                    t    f(t1 a1);              \
+__attribute__((always_inline))                  \
+static __inline     t __##f(t1 a1){             \
+    _##f(f, a1);                                \
+}
+
+#define SVC_1_1(f, t, t1)                       \
+__svc_indirect(0)   t _##f(t(*)(t1), t1);       \
+                    t    f(t1 a1);              \
+__attribute__((always_inline))                  \
+static __inline     t __##f(t1 a1){             \
+    return _##f(f, a1);                         \
+}                   
+
+#define SVC_2_1(f, t, t1, t2)                           \
+__svc_indirect(0)   t _##f(t(*)(t1, t2), t1, t2);       \
+                    t    f(t1 a1, t2 a2);               \
+__attribute__((always_inline))                          \
+static __inline     t __##f(t1 a1, t2 a2){              \
+    return _##f(f, a1, a2);                             \
+}
+
+#define SVC_4_1(f, t, t1, t2, t3, t4)                               \
+__svc_indirect(0)   t _##f(t(*)(t1, t2, t3, t4), t1, t2, t3, t4);   \
+                    t    f(t1 a1, t2 a2, t3 a3, t4 a4);             \
+__attribute__((always_inline))                                      \
+static __inline     t __##f(t1 a1, t2 a2, t3 a3, t4 a4){            \
+    return _##f(f, a1, a2, a3, a4);                                 \
+}
+
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void idle(void){
@@ -216,13 +255,16 @@ void OSfree(void *ptr){
 /* ---------------------------------------------------------------------------*/
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
-uint8_t svcMessageQWrite(P_MSGQ msg, void *data){
+SVC_2_1(svcMessageWrite,    uint8_t, P_MSGQ, void*)
+SVC_2_1(svcMessageRead,     uint8_t, P_MSGQ, void*)
+    
+uint8_t svcMessageWrite(P_MSGQ msg, void *data){
     int i = rt_mail_write(msg->mail, data, msg->size);
     if(i == msg->size){ return 0; }
     else{ return 1; }    
 }
 
-uint8_t svcMessageQRead(P_MSGQ msg, void *data){
+uint8_t svcMessageRead(P_MSGQ msg, void *data){
     int i = rt_mail_read(msg->mail, data, msg->size);
     if(i == msg->size){ return 0; }
     else{ return 1; }
@@ -282,9 +324,8 @@ void OSMessageQDistroy(P_MSGQ msg){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-__svc_indirect(0) uint8_t __svcMessageQWrite(uint8_t(*)(P_MSGQ, void*), P_MSGQ, void*);
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
-    return __svcMessageQWrite(svcMessageQWrite, msg, data);
+    return __svcMessageWrite(msg, data);
 }
 
 /**
@@ -294,7 +335,6 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
-__svc_indirect(0) uint8_t __svcMessageQRead(uint8_t(*)(P_MSGQ, void*), P_MSGQ, void*);
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    return __svcMessageQRead(svcMessageQRead, msg, data);
+    return __svcMessageRead(msg, data);
 }

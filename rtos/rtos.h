@@ -14,6 +14,7 @@
 #include "rt_mailbox.h"
 #include "rt_memory.h"
 #include "rt_mempool.h"
+#include "rt_HAL.h"
 
 // Platform
 #define     STM32F0             1U
