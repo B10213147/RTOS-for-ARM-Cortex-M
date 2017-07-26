@@ -115,21 +115,21 @@ void rt_context_switch(void){
 
 // SVC handler - Assembly wrapper to extract
 // stack frame starting address
+uint32_t svc_exc_return; // EXC_RETURN use by SVC
 __asm void SVC_Handler(void)
 {
-    MOVS    r0, #4
-    MOV     r1, LR
-    TST     r0, r1                  ; Check EXC_RETURN
+    MOVS    R0, #4 // Extract stack frame location
+    MOV     R1, LR
+    TST     R0, R1
     BEQ     stacking_used_MSP
-    MRS     R0,PSP                  ; Read PSP
-    B       end_reading_SP
+    MRS     R0, PSP ; first parameter - stacking was using PSP
+    B       SVC_Handler_cont
 stacking_used_MSP
-    MRS     R0,MSP                  ; Read MSP
-end_reading_SP
-    LDR     R1,[R0,#24]             ; Read Saved PC from Stack
-    SUBS    R1,R1,#2                ; Point to SVC Instruction
-    LDRB    R1,[R1]                 ; Load SVC Number
-    CMP     R1,#0
+    MRS     R0, MSP ; first parameter - stacking was using MSP
+SVC_Handler_cont
+    LDR     R2,=__cpp(&svc_exc_return) // Save current EXC_RETURN
+    MOV     R1, LR
+    STR     R1,[R2]
     
     MOV     LR,R4
     LDMIA   R0,{R0-R3,R4}           ; Read R0-R3,R12 from stack 
@@ -137,8 +137,9 @@ end_reading_SP
     MOV     R4,LR
     BLX     R12                     ; Call SVC Function 
 
+    LDR     R5,=__cpp(&svc_exc_return) // Load new EXC_RETURN
+    LDR     R4,[R5]
     MOVS    r3, #4
-    MOV     r4, LR
     TST     r3, r4                  ; Check EXC_RETURN
     BEQ     used_MSP
     MRS     R3,PSP                  ; Read PSP
