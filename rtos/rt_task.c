@@ -46,12 +46,12 @@ OS_TID rt_get_TID(void){
 P_TCB rt_tsk_create(P_TCB task){
     P_TCB p_task;
     OS_TID task_id;
-    OSDisable();
+    //OSDisable();
     
     p_task = (P_TCB)rt_pool_alloc(task_pool);
     if(!p_task){ 
         // Memory alloc failed
-        OSEnable();
+        //OSEnable();
         return NULL; 
     }   
     p_task->function = task->function;
@@ -66,7 +66,7 @@ P_TCB rt_tsk_create(P_TCB task){
     if(task_id == 0){ 
         // Task create failed
         rt_mem_free(&system_memory, p_task);
-        OSEnable();
+        //OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
@@ -79,7 +79,7 @@ P_TCB rt_tsk_create(P_TCB task){
             (char *)((uint32_t)(p_task->stack) + sizeof(struct mem)), \
             os_heap_size);
     
-    OSEnable();    
+    //OSEnable();    
     return p_task;
 }
 

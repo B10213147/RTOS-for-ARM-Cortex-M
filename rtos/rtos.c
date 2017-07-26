@@ -65,6 +65,7 @@ P_POOL stack_pool;
 P_POOL msgq_pool;
 P_POOL mail_pool;
 uint32_t slice_quantum;
+extern uint32_t MSP_bottom;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -81,11 +82,12 @@ uint32_t slice_quantum;
   */
 void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
-    __set_PRIMASK(0x1U);    // CPU ignores all of interrupt requests
+    
+    MSP_bottom = __get_MSP();
     slice_quantum = slice * (SystemCoreClock / 1000000);
-
-    NVIC_SetPriority(SysTick_IRQn, 0x1);
-    NVIC_SetPriority(SVC_IRQn, 0x0);
+    NVIC_SetPriority(SysTick_IRQn, 0x0);
+    NVIC_SetPriority(SVC_IRQn, 0x1);
+    
 #if (os_trigger_source == CM_SysTick)
      // Systick is a 24-bit downcount counter
     idle_interval = ((0x1U << 25) - 1) / slice_quantum;
@@ -163,17 +165,10 @@ void OSDisable(void){
 /* ---------------------------------------------------------------------------*/
 /*                              Thread Control                                */
 /* ---------------------------------------------------------------------------*/
+SVC_4_1(svcTaskCreate, uint8_t, voidfuncptr, void*, int, int)
+SVC_1_1(svcTaskDelete, uint8_t, voidfuncptr)
 
-/**
-  * @brief  Create task for RTOS.
-  * @param  task_entry: Function name.
-  * @param  argv: Function's arguments.
-  * @param  interval: Number of timeslices in which the task is scheduled once.
-  * @param  priority: Priority of task. (Lower value means higer priority)
-  * @retval 0 Function succeeded.
-  * @retval 1 Function failed.
-  */
-uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
+uint8_t svcTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
     struct OS_TCB task;
     P_TCB n_task;
     
@@ -190,22 +185,7 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
     return 0;
 }
 
-/**
-  * @brief  Task can delete itself by calling this function.
-  * @param  None
-  * @retval None
-  */
-void OSTaskDeleteSelf(void){
-    os_tsk.run->state = Inactive;
-}
-
-/**
-  * @brief  Delete a task in RTOS.
-  * @param  task: Function wait for deleted.
-  * @retval 0 Function succeeded.
-  * @retval 1 Function failed.
-  */
-uint8_t OSTaskDelete(voidfuncptr task){
+uint8_t svcTaskDelete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
     if(os_tsk.run->function == task){
@@ -224,9 +204,53 @@ uint8_t OSTaskDelete(voidfuncptr task){
     return rt_tsk_delete(tid);
 }
 
+/**
+  * @brief  Create task for RTOS.
+  * @param  task_entry: Function name.
+  * @param  argv: Function's arguments.
+  * @param  interval: Number of timeslices in which the task is scheduled once.
+  * @param  priority: Priority of task. (Lower value means higer priority)
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
+uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
+    return __svcTaskCreate(task_entry, argv, interval, priority);
+}
+
+/**
+  * @brief  Task can delete itself by calling this function.
+  * @param  None
+  * @retval None
+  */
+void OSTaskDeleteSelf(void){
+    os_tsk.run->state = Inactive;
+}
+
+/**
+  * @brief  Delete a task in RTOS.
+  * @param  task: Function wait for deleted.
+  * @retval 0 Function succeeded.
+  * @retval 1 Function failed.
+  */
+uint8_t OSTaskDelete(voidfuncptr task){
+    return __svcTaskDelete(task);
+}
+
 /* ---------------------------------------------------------------------------*/
 /*                              Memory Control                                */
 /* ---------------------------------------------------------------------------*/
+SVC_1_1(svcMalloc,  void*,  uint32_t)
+SVC_1_0(svcFree,    void,   void*)
+    
+void *svcMalloc(uint32_t size){
+    char *mem = NULL;
+    mem = (char *)rt_mem_alloc((P_MEM)(os_tsk.run->stack), size);
+    return mem;
+}
+
+void svcFree(void *ptr){
+    rt_mem_free((P_MEM)(os_tsk.run->stack), ptr);
+}
 
 /**
   * @brief  Allocate memory space from task stack.
@@ -234,11 +258,7 @@ uint8_t OSTaskDelete(voidfuncptr task){
   * @retval Pointer to allocated memory.
   */
 void *OSmalloc(uint32_t size){
-    char *mem = NULL;
-    OSDisable();
-    mem = (char *)rt_mem_alloc((P_MEM)(os_tsk.run->stack), size);
-    OSEnable();
-    return mem;
+    return __svcMalloc(size);
 }
 
 /**
@@ -247,9 +267,7 @@ void *OSmalloc(uint32_t size){
   * @retval None
   */
 void OSfree(void *ptr){
-    OSDisable();
-    rt_mem_free((P_MEM)(os_tsk.run->stack), ptr);
-    OSEnable();
+    __svcFree(ptr);
 }
 
 /* ---------------------------------------------------------------------------*/
