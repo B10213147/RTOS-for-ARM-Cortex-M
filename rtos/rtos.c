@@ -45,6 +45,8 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     __set_PRIMASK(0x1U);    // CPU ignores all of interrupt requests
     slice_quantum = slice * (SystemCoreClock / 1000000);
 
+    NVIC_SetPriority(SysTick_IRQn, 0x1);
+    NVIC_SetPriority(SVC_IRQn, 0x0);
 #if (os_trigger_source == CM_SysTick)
      // Systick is a 24-bit downcount counter
     idle_interval = ((0x1U << 25) - 1) / slice_quantum;
@@ -72,6 +74,8 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     
     // Create idle task
     OSTaskCreate(idle, 0, idle_interval, 255);
+    
+    
 }
 
 /**
@@ -212,6 +216,17 @@ void OSfree(void *ptr){
 /* ---------------------------------------------------------------------------*/
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
+uint8_t svcMessageQWrite(P_MSGQ msg, void *data){
+    int i = rt_mail_write(msg->mail, data, msg->size);
+    if(i == msg->size){ return 0; }
+    else{ return 1; }    
+}
+
+uint8_t svcMessageQRead(P_MSGQ msg, void *data){
+    int i = rt_mail_read(msg->mail, data, msg->size);
+    if(i == msg->size){ return 0; }
+    else{ return 1; }
+}
 
 /**
   * @brief  Create Message Queue.
@@ -267,10 +282,9 @@ void OSMessageQDistroy(P_MSGQ msg){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
+__svc_indirect(0) uint8_t __svcMessageQWrite(uint8_t(*)(P_MSGQ, void*), P_MSGQ, void*);
 uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
-    int i = rt_mail_write(msg->mail, data, msg->size);
-    if(i == msg->size){ return 0; }
-    else{ return 1; }
+    return __svcMessageQWrite(svcMessageQWrite, msg, data);
 }
 
 /**
@@ -280,8 +294,7 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 0 Function succeeded.
   * @retval 1 Function failed.
   */
+__svc_indirect(0) uint8_t __svcMessageQRead(uint8_t(*)(P_MSGQ, void*), P_MSGQ, void*);
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    int i = rt_mail_read(msg->mail, data, msg->size);
-    if(i == msg->size){ return 0; }
-    else{ return 1; }
+    return __svcMessageQRead(svcMessageQRead, msg, data);
 }

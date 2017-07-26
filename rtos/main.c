@@ -19,6 +19,7 @@ int main(void){
     Rx2 = OSMessageQCreate(7, 5);
     Tx2 = OSMessageQCreate(8, 5);
     OSTaskCreate(test3, 0, 15, 2); 
+    __set_PRIMASK(0x0U);
     OSMessageQWrite(Rx1, "Hello");
     OSFirstEnable();
     
@@ -29,36 +30,30 @@ int main(void){
 
 void test1(void){
     char a[10];
-    while(1){        
-        OSDisable();
+    while(1){
         if(!OSMessageQRead(Rx1, a)){
             OSMessageQWrite(Tx1, a);
-        }
-        OSEnable();        
+        }        
     }
 }
 void test2(void){
     char a[10];
-    while(1){        
-        OSDisable();
+    while(1){
         if(!OSMessageQRead(Rx2, a)){
             OSMessageQWrite(Tx2, a);
-        }
-        OSEnable();        
+        }      
     }
 }
 void test3(void){
     char *a;
-    while(1){    
+    while(1){
         a = (char *)OSmalloc(10);
-        OSDisable();
         if(!OSMessageQRead(Tx1, a)){
             OSMessageQWrite(Rx2, a);
         }
         if(!OSMessageQRead(Tx2, a)){
             OSMessageQWrite(Rx1, a);
         }
-        OSEnable();  
         OSfree(a);
     }
 }

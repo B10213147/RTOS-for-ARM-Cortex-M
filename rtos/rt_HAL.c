@@ -168,8 +168,10 @@ void SysTick_Handler(void){
         rt_start_counter--;
         SysTick->LOAD = slice_quantum - 0x10U;  // Calibration
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+        register uint32_t LR  __ASM("lr");
+        uint32_t checklr = LR & 0x4;
         // Schedular
-        rt_sched();
+        rt_sched(checklr);
         // Sched ends
         if(os_tsk.run != os_tsk.next){
             rt_context_switch();
