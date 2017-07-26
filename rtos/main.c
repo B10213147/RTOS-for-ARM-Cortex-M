@@ -9,13 +9,17 @@ P_MSGQ Tx1;
 P_MSGQ Rx2;
 P_MSGQ Tx2;
 int memtest[10000];
+extern uint32_t MSP_bottom;
 
 int main(void){
-    OSInit(100, (char *)memtest, sizeof(memtest));  // Time slice = 1ms
-    OSTaskCreate(test1, 0, 30, 0);  
+    MSP_bottom = __get_MSP();
+    OSInit(10, (char *)memtest, sizeof(memtest));  // Time slice = 1ms
+    OSTaskCreate(test1, 0, 30, 0); 
+    __set_PRIMASK(0x0U);    
     Rx1 = OSMessageQCreate(5, 5);
     Tx1 = OSMessageQCreate(6, 5);
-    OSTaskCreate(test2, 0, 60, 1);   
+    OSTaskCreate(test2, 0, 60, 1);  
+    __set_PRIMASK(0x0U);  
     Rx2 = OSMessageQCreate(7, 5);
     Tx2 = OSMessageQCreate(8, 5);
     OSTaskCreate(test3, 0, 15, 2); 
@@ -27,12 +31,13 @@ int main(void){
     
     return 0;    
 }
-
+P_MSGQ foo;
 void test1(void){
     char a[10];
     while(1){
         if(!OSMessageQRead(Rx1, a)){
             OSMessageQWrite(Tx1, a);
+            OSMessageQDistroy(foo);
         }        
     }
 }
@@ -41,6 +46,7 @@ void test2(void){
     while(1){
         if(!OSMessageQRead(Rx2, a)){
             OSMessageQWrite(Tx2, a);
+            foo = OSMessageQCreate(5, 5);
         }      
     }
 }

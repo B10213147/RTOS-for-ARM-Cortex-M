@@ -255,9 +255,38 @@ void OSfree(void *ptr){
 /* ---------------------------------------------------------------------------*/
 /*                            MessageQ Control                                */
 /* ---------------------------------------------------------------------------*/
+SVC_2_1(svcMessageCreate,   P_MSGQ,  uint32_t, uint32_t)
+SVC_1_0(svcMessageDistroy,  void,    P_MSGQ)
 SVC_2_1(svcMessageWrite,    uint8_t, P_MSGQ, void*)
 SVC_2_1(svcMessageRead,     uint8_t, P_MSGQ, void*)
     
+P_MSGQ svcMessageCreate(uint32_t size, uint32_t blocks){
+    P_MSGQ msg = NULL;
+
+    msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
+    if(!msg){ return NULL; }
+    
+    // 4-byte alignment
+    size = (size + 3U) & ~3U;
+    
+    msg->mail = rt_mail_create(blocks * size);
+    if(!msg->mail){
+        rt_pool_free(msgq_pool, msg);
+        return NULL;
+    }
+    msg->size = size;
+    msg->blocks = blocks;
+
+    return msg;
+}
+
+void svcMessageDistroy(P_MSGQ msg){
+    if(msg){
+        rt_mail_delete(msg->mail);
+        rt_pool_free(msgq_pool, msg);
+    }
+}
+
 uint8_t svcMessageWrite(P_MSGQ msg, void *data){
     int i = rt_mail_write(msg->mail, data, msg->size);
     if(i == msg->size){ return 0; }
@@ -278,29 +307,7 @@ uint8_t svcMessageRead(P_MSGQ msg, void *data){
   * @retval NULL - No message queue created.
   */
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
-    P_MSGQ msg = NULL;
-    OSDisable();
-
-    msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
-    if(!msg){ 
-        OSEnable();
-        return NULL; 
-    }
-    
-    // 4-byte alignment
-    size = (size + 3U) & ~3U;
-    
-    msg->mail = rt_mail_create(blocks * size);
-    if(!msg->mail){
-        rt_pool_free(msgq_pool, msg);
-        OSEnable();
-        return NULL;
-    }
-    msg->size = size;
-    msg->blocks = blocks;
-    
-    OSEnable();
-    return msg;
+    return __svcMessageCreate(size, blocks);
 }
 
 /**
@@ -309,12 +316,7 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
   * @retval None
   */
 void OSMessageQDistroy(P_MSGQ msg){
-    if(msg){
-        OSDisable();
-        rt_mail_delete(msg->mail);
-        rt_pool_free(msgq_pool, msg);
-        OSEnable();
-    }
+    __svcMessageDistroy(msg);
 }
 
 /**

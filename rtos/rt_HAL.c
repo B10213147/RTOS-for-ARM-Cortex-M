@@ -163,13 +163,14 @@ ready2return
   * @param  None
   * @retval None
   */
+uint32_t MSP_bottom;
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
+        uint32_t checklr = (__get_MSP() + 8 * 4) < MSP_bottom;
         rt_start_counter--;
         SysTick->LOAD = slice_quantum - 0x10U;  // Calibration
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
-        register uint32_t LR  __ASM("lr");
-        uint32_t checklr = LR & 0x4;
+
         // Schedular
         rt_sched(checklr);
         // Sched ends

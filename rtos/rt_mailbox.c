@@ -24,7 +24,7 @@
 P_MAIL rt_mail_create(uint32_t size){
     P_MAIL p_new = NULL;
     char *data;
-    OSDisable();
+    //OSDisable();
     
     p_new = (P_MAIL)rt_pool_alloc(mail_pool);
     data = (char *)rt_mem_alloc(&system_memory, size);
@@ -32,7 +32,7 @@ P_MAIL rt_mail_create(uint32_t size){
     if(!p_new || !data){
         rt_pool_free(mail_pool, p_new);
         rt_mem_free(&system_memory, data);
-        OSEnable();
+        //OSEnable();
         return NULL;
     }
     
@@ -41,7 +41,7 @@ P_MAIL rt_mail_create(uint32_t size){
     p_new->length = size;
     p_new->data = data;
     
-    OSEnable();
+    //OSEnable();
     return p_new;
 }
 
@@ -51,10 +51,10 @@ P_MAIL rt_mail_create(uint32_t size){
   * @retval None
   */
 void rt_mail_delete(P_MAIL mail){
-    OSDisable();
+    //OSDisable();
     rt_mem_free(&system_memory, mail->data);
     rt_pool_free(mail_pool, mail);
-    OSEnable();
+    //OSEnable();
 }
 
 /**
