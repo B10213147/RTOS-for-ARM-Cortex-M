@@ -85,18 +85,6 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     
     MSP_bottom = __get_MSP();
     slice_quantum = slice * (SystemCoreClock / 1000000);
-    NVIC_SetPriority(SysTick_IRQn, 0x0);
-    NVIC_SetPriority(SVC_IRQn, 0x1);
-    
-#if (os_trigger_source == CM_SysTick)
-     // Systick is a 24-bit downcount counter
-    idle_interval = ((0x1U << 25) - 1) / slice_quantum;
-    while(SysTick_Config(slice_quantum)); 
-#elif (os_trigger_source == ST_TIM6)
-    // Timer6 is a 16-bit upcount counter
-    idle_interval = ((0x1U << 17) - 1) / slice_quantum;
-    ST_TIM6_Config(slice_quantum);    
-#endif
 
     // Initialize task TCB pointers to NULL.
     for(int i = 0; i < max_active_TCB; i++){
@@ -116,7 +104,18 @@ void OSInit(uint32_t slice, char *memory, uint32_t size){
     // Create idle task
     OSTaskCreate(idle, 0, idle_interval, 255);
     
+    NVIC_SetPriority(SysTick_IRQn, 0x0);
+    NVIC_SetPriority(SVC_IRQn, 0x1);
     
+#if (os_trigger_source == CM_SysTick)
+     // Systick is a 24-bit downcount counter
+    idle_interval = ((0x1U << 25) - 1) / slice_quantum;
+    while(SysTick_Config(slice_quantum)); 
+#elif (os_trigger_source == ST_TIM6)
+    // Timer6 is a 16-bit upcount counter
+    idle_interval = ((0x1U << 17) - 1) / slice_quantum;
+    ST_TIM6_Config(slice_quantum);    
+#endif    
 }
 
 /**
@@ -171,6 +170,7 @@ SVC_1_1(svcTaskDelete, uint8_t, voidfuncptr)
 uint8_t svcTaskCreate(voidfuncptr task_entry, void *argv, int interval, int priority){
     struct OS_TCB task;
     P_TCB n_task;
+    __set_PRIMASK(0x1U);
     
     task.function = task_entry;
     task.arg = argv;
@@ -182,12 +182,15 @@ uint8_t svcTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prio
     rt_put_first(&os_rdy_tasks, n_task);
     //rt_put_last(&os_rdy_tasks, n_task);
 
+    __set_PRIMASK(0x0U);
     return 0;
 }
 
 uint8_t svcTaskDelete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
+    __set_PRIMASK(0x1U);
+    
     if(os_tsk.run->function == task){
         // Delete running task
         os_tsk.run->state = Inactive;
@@ -200,7 +203,9 @@ uint8_t svcTaskDelete(voidfuncptr task){
         p_TCB = os_active_TCB[tid-1];
         p_TCB->state = Inactive;
         rt_rmv_task(&os_rdy_tasks, p_TCB);
-    }    
+    }
+    
+    __set_PRIMASK(0x0U);    
     return rt_tsk_delete(tid);
 }
 
@@ -244,12 +249,16 @@ SVC_1_0(svcFree,    void,   void*)
     
 void *svcMalloc(uint32_t size){
     char *mem = NULL;
+    __set_PRIMASK(0x1U);
     mem = (char *)rt_mem_alloc((P_MEM)(os_tsk.run->stack), size);
+    __set_PRIMASK(0x0U);
     return mem;
 }
 
 void svcFree(void *ptr){
+    __set_PRIMASK(0x1U);
     rt_mem_free((P_MEM)(os_tsk.run->stack), ptr);
+    __set_PRIMASK(0x0U);
 }
 
 /**
@@ -280,7 +289,8 @@ SVC_2_1(svcMessageRead,     uint8_t, P_MSGQ, void*)
     
 P_MSGQ svcMessageCreate(uint32_t size, uint32_t blocks){
     P_MSGQ msg = NULL;
-
+    __set_PRIMASK(0x1U);
+    
     msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
     if(!msg){ return NULL; }
     
@@ -294,25 +304,32 @@ P_MSGQ svcMessageCreate(uint32_t size, uint32_t blocks){
     }
     msg->size = size;
     msg->blocks = blocks;
-
+    
+    __set_PRIMASK(0x0U);
     return msg;
 }
 
 void svcMessageDistroy(P_MSGQ msg){
+    __set_PRIMASK(0x1U);
     if(msg){
         rt_mail_delete(msg->mail);
         rt_pool_free(msgq_pool, msg);
     }
+    __set_PRIMASK(0x0U);
 }
 
 uint8_t svcMessageWrite(P_MSGQ msg, void *data){
+    __set_PRIMASK(0x1U);
     int i = rt_mail_write(msg->mail, data, msg->size);
+    __set_PRIMASK(0x0U);
     if(i == msg->size){ return 0; }
-    else{ return 1; }    
+    else{ return 1; }
 }
 
 uint8_t svcMessageRead(P_MSGQ msg, void *data){
+    __set_PRIMASK(0x1U);
     int i = rt_mail_read(msg->mail, data, msg->size);
+    __set_PRIMASK(0x0U);
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }
