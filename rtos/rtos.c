@@ -72,7 +72,8 @@ extern uint32_t MSP_bottom;
 /* ---------------------------------------------------------------------------*/
 /*                              Kernel Control                                */
 /* ---------------------------------------------------------------------------*/
-  
+
+//  Kernel Control Public API
 /**
   * @brief  Start real time operating system.
   * @param  slice: Timeslice in microseconds.
@@ -209,6 +210,7 @@ uint8_t svcTaskDelete(voidfuncptr task){
     return rt_tsk_delete(tid);
 }
 
+//  Thread Control Public API
 /**
   * @brief  Create task for RTOS.
   * @param  task_entry: Function name.
@@ -261,6 +263,7 @@ void svcFree(void *ptr){
     __set_PRIMASK(0x0U);
 }
 
+//  Memory Control Public API
 /**
   * @brief  Allocate memory space from task stack.
   * @param  size: Size in byte.
@@ -334,6 +337,7 @@ uint8_t svcMessageRead(P_MSGQ msg, void *data){
     else{ return 1; }
 }
 
+//  MessageQ Control Public API
 /**
   * @brief  Create Message Queue.
   * @param  size: Size of each block in byte.

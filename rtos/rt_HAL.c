@@ -117,42 +117,42 @@ void rt_context_switch(void){
 // stack frame starting address
 uint32_t svc_exc_return; // EXC_RETURN use by SVC
 __asm void SVC_Handler(void)
-{
-    MOVS    R0, #4 // Extract stack frame location
+{   
+    MOVS    R0, #4  // Extract stack frame location
     MOV     R1, LR
     TST     R0, R1
     BEQ     stacking_used_MSP
-    MRS     R0, PSP ; first parameter - stacking was using PSP
+    MRS     R0, PSP // first parameter - stacking was using PSP
     B       SVC_Handler_cont
 stacking_used_MSP
-    MRS     R0, MSP ; first parameter - stacking was using MSP
+    MRS     R0, MSP // first parameter - stacking was using MSP
 SVC_Handler_cont
     LDR     R2,=__cpp(&svc_exc_return) // Save current EXC_RETURN
     MOV     R1, LR
     STR     R1,[R2]
     
     MOV     LR,R4
-    LDMIA   R0,{R0-R3,R4}           ; Read R0-R3,R12 from stack 
+    LDMIA   R0,{R0-R3,R4}           // Read R0-R3,R12 from stack 
     MOV     R12,R4
     MOV     R4,LR
-    BLX     R12                     ; Call SVC Function 
+    BLX     R12                     // Call SVC Function 
 
     LDR     R5,=__cpp(&svc_exc_return) // Load new EXC_RETURN
     LDR     R4,[R5]
-    MOVS    r3, #4
-    TST     r3, r4                  ; Check EXC_RETURN
+    MOVS    R3, #4
+    TST     R3, R4                  // Check EXC_RETURN
     BEQ     used_MSP
-    MRS     R3,PSP                  ; Read PSP
-    STMIA   R3!,{R0-R2}             ; Store return values 
-    MOVS    R0,#:NOT:0xFFFFFFFD     ; Set EXC_RETURN value
+    MRS     R3,PSP                  // Read PSP
+    STMIA   R3!,{R0-R2}             // Store return values 
+    MOVS    R0,#:NOT:0xFFFFFFFD     // Set EXC_RETURN value
     B       ready2return
 used_MSP
-    MRS     R3,MSP                  ; Read MSP
-    STMIA   R3!,{R0-R2}             ; Store return values 
-    MOVS    R0,#:NOT:0xFFFFFFF9     ; Set EXC_RETURN value 
+    MRS     R3,MSP                  // Read MSP
+    STMIA   R3!,{R0-R2}             // Store return values 
+    MOVS    R0,#:NOT:0xFFFFFFF9     // Set EXC_RETURN value 
 ready2return    
     MVNS    R0,R0
-    BX      R0                      ; RETI to Thread Mode
+    BX      R0                      // RETI to Thread Mode
 
     ALIGN
 }
@@ -166,13 +166,14 @@ ready2return
 uint32_t MSP_bottom;
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
-        uint32_t checklr = (__get_MSP() + 8 * 4) < MSP_bottom;
+        // Check if there is lower priority ISR running before systick expired
+        uint32_t checkstack = (__get_MSP() + 8 * 4) < MSP_bottom;
         rt_start_counter--;
         SysTick->LOAD = slice_quantum - 0x10U;  // Calibration
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
 
         // Schedular
-        rt_sched(checklr);
+        rt_sched(checkstack);
         // Sched ends
         if(os_tsk.run != os_tsk.next){
             rt_context_switch();
