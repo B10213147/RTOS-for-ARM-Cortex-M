@@ -70,7 +70,7 @@ void rt_mem_remove_blk(P_MEMB *list, P_MEMB block){
   * @retval None
   */
 void rt_mem_create(P_MEM pool, char *memory, uint32_t size){
-    // 4-byte alignment
+    // 8-byte alignment
     uint32_t n_memory = ((uint32_t)memory + 0x3U) & ~0x3U;
     size -= n_memory - (uint32_t)memory;  // Remove unwanted head
     size &= ~0x3U;  // Remove unwanted tail

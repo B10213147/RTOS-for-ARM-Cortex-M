@@ -10,6 +10,7 @@
 #include "rtos.h"
 #include "rt_list.h"
 #include "rt_memory.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -21,7 +22,7 @@ void *os_active_TCB[max_active_TCB];
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief  Get a none-occupied id from os_active_TCB
+  * @brief  Get a none-occupied id from os_active_TCB.
   * @param  None
   * @retval None-occupied id.
   * @retval 0 os_active_TCB is full.
@@ -64,11 +65,17 @@ P_TCB rt_tsk_create(P_TCB task){
     task_id = rt_get_TID();
     if(task_id == 0){ 
         // Task create failed
+        rt_mem_free(&system_memory, p_task);
         OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
     p_task->task_id = task_id;
+
+    while(rt_init_stack(p_task, rt_pool_alloc(stack_pool), \
+                        os_stack_size + os_heap_size));
+    p_task->heap = (P_MEM)rt_pool_alloc(heap_pool);
+    rt_mem_create(p_task->heap, (char *)(p_task->stack), os_heap_size);
     
     OSEnable();    
     return p_task;
@@ -93,6 +100,8 @@ uint8_t rt_tsk_delete(OS_TID task_id){
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
+    rt_pool_free(heap_pool, p_TCB->heap);
+    rt_pool_free(stack_pool, p_TCB->stack);
     rt_pool_free(task_pool, p_TCB);
     
     OSEnable();

@@ -14,14 +14,18 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 void idle(void){
+    while(1);
 }
 
 /* Private variables ---------------------------------------------------------*/
-triggerType rt_trigger;
 int rt_start_counter = 0;
 struct mem system_memory;
 P_POOL task_pool;
 P_POOL list_pool;
+P_POOL stack_pool;
+P_POOL heap_pool;
+P_POOL msgq_pool;
+P_POOL mail_pool;
 uint32_t slice_quantum;
 
 /* Private functions ---------------------------------------------------------*/
@@ -32,34 +36,26 @@ uint32_t slice_quantum;
   
 /**
   * @brief  Start real time operating system.
-  * @param  slice: timeslice in microseconds.
-  * @param  source: RTOS trigger source
-  *   This parameter can be one of the following values:
-  *     @arg CM_SysTick
-  *     @arg ST_TIM6
+  * @param  slice: Timeslice in microseconds.
   * @param  memory: Pointer to system memory.
   * @param  size: Size in byte.
   * @retval None
   */
-void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
+void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
     __set_PRIMASK(0x1U);    // CPU ignores all of interrupt requests
     slice_quantum = slice * (SystemCoreClock / 1000000);
-    rt_trigger = source;
-    switch(rt_trigger){
-    case CM_SysTick:
-        // Systick is a 24-bit downcount counter
-        idle_interval = ((0x1U << 25) - 1) / slice_quantum;
-        while(SysTick_Config(slice_quantum));
-        break;
-    case ST_TIM6:
-        // Timer6 is a 16-bit upcount counter
-        idle_interval = ((0x1U << 17) - 1) / slice_quantum;
-        ST_TIM6_Config(slice_quantum);
-        break;
-    default:
-        break;
-    }
+
+#if (os_trigger_source == CM_SysTick)
+     // Systick is a 24-bit downcount counter
+    idle_interval = ((0x1U << 25) - 1) / slice_quantum;
+    while(SysTick_Config(slice_quantum)); 
+#elif (os_trigger_source == ST_TIM6)
+    // Timer6 is a 16-bit upcount counter
+    idle_interval = ((0x1U << 17) - 1) / slice_quantum;
+    ST_TIM6_Config(slice_quantum);    
+#endif
+
     // Initialize task TCB pointers to NULL.
     for(int i = 0; i < max_active_TCB; i++){
         os_active_TCB[i] = NULL;
@@ -68,10 +64,37 @@ void OSInit(uint32_t slice, triggerType source, char *memory, uint32_t size){
     rt_mem_create(&system_memory, memory, size);
     task_pool = rt_pool_create(sizeof(struct OS_TCB), max_active_TCB);
     list_pool = rt_pool_create(sizeof(struct task_list), max_active_TCB);
-    while(!task_pool || !list_pool);    // Not enough space in system_memory
+    stack_pool = rt_pool_create(os_stack_size + os_heap_size, max_active_TCB);
+    heap_pool = rt_pool_create(sizeof(struct mem), max_active_TCB);
+    msgq_pool = rt_pool_create(sizeof(struct msgq), max_active_TCB * 2);
+    mail_pool = rt_pool_create(sizeof(struct mail_blk), max_active_TCB * 2);
+    while(!task_pool || !list_pool || \
+        !stack_pool || !heap_pool || \
+        !msgq_pool || !mail_pool);    // Not enough space in system_memory
     
     // Create idle task
     OSTaskCreate(idle, 0, idle_interval, 255);
+}
+
+/**
+  * @brief  First time to enable RTOS.
+  * @note   This function should only called in thread mode(main.c)
+  * @note   and only called once.
+  * @param  None
+  * @retval None
+  */
+void OSFirstEnable(void){
+    os_tsk.run = os_active_TCB[0];  // Idle task
+    __set_PSP(os_tsk.run->tsk_stack + 16 * 4);
+    __set_CONTROL(0x3);
+    __ISB();
+    OSEnable();
+#if (os_trigger_source == CM_SysTick)
+    SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;  
+#elif (os_trigger_source == ST_TIM6)
+    TIM6->DIER |= TIM_DIER_UIE;  
+#endif 
+    os_tsk.run->function();    
 }
 
 /**
@@ -91,7 +114,7 @@ void OSEnable(void){
   * @param  None
   * @retval None
   */
-void OSDisable(void){    
+void OSDisable(void){
     __set_PRIMASK(0x1U);
     rt_start_counter--;
 }
@@ -132,7 +155,7 @@ uint8_t OSTaskCreate(voidfuncptr task_entry, void *argv, int interval, int prior
   * @retval None
   */
 void OSTaskDeleteSelf(void){
-    os_running_tsk->state = Inactive;
+    os_tsk.run->state = Inactive;
 }
 
 /**
@@ -144,9 +167,9 @@ void OSTaskDeleteSelf(void){
 uint8_t OSTaskDelete(voidfuncptr task){
     P_TCB p_TCB;
     OS_TID tid;
-    if(os_running_tsk->function == task){
+    if(os_tsk.run->function == task){
         // Delete running task
-        os_running_tsk->state = Inactive;
+        os_tsk.run->state = Inactive;
         return 0;
     }
     
@@ -165,26 +188,26 @@ uint8_t OSTaskDelete(voidfuncptr task){
 /* ---------------------------------------------------------------------------*/
 
 /**
-  * @brief  Allocate memory space from system memory.
+  * @brief  Allocate memory space from task stack.
   * @param  size: Size in byte.
   * @retval Pointer to allocated memory.
   */
 void *OSmalloc(uint32_t size){
     char *mem = NULL;
     OSDisable();
-    mem = (char *)rt_mem_alloc(&system_memory, size);
+    mem = (char *)rt_mem_alloc(os_tsk.run->heap, size);
     OSEnable();
     return mem;
 }
 
 /**
-  * @brief  Free memory space into system memory.
+  * @brief  Free memory space into task stack.
   * @param  ptr: Pointer to allocated memory.
   * @retval None
   */
 void OSfree(void *ptr){
     OSDisable();
-    rt_mem_free(&system_memory, ptr);
+    rt_mem_free(os_tsk.run->heap, ptr);
     OSEnable();
 }
 
@@ -202,8 +225,8 @@ void OSfree(void *ptr){
 P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     P_MSGQ msg = NULL;
     OSDisable();
-    
-    msg = rt_mem_alloc(&system_memory, sizeof(struct msgq));
+
+    msg = (P_MSGQ)rt_pool_alloc(msgq_pool);
     if(!msg){ 
         OSEnable();
         return NULL; 
@@ -214,7 +237,7 @@ P_MSGQ OSMessageQCreate(uint32_t size, uint32_t blocks){
     
     msg->mail = rt_mail_create(blocks * size);
     if(!msg->mail){
-        rt_mem_free(&system_memory, msg);
+        rt_pool_free(msgq_pool, msg);
         OSEnable();
         return NULL;
     }
@@ -234,7 +257,7 @@ void OSMessageQDistroy(P_MSGQ msg){
     if(msg){
         OSDisable();
         rt_mail_delete(msg->mail);
-        rt_mem_free(&system_memory, msg);
+        rt_pool_free(msgq_pool, msg);
         OSEnable();
     }
 }
@@ -260,7 +283,7 @@ uint8_t OSMessageQWrite(P_MSGQ msg, void *data){
   * @retval 1 Function failed.
   */
 uint8_t OSMessageQRead(P_MSGQ msg, void *data){
-    int i = rt_mail_read(msg->mail, data, msg->size); 
+    int i = rt_mail_read(msg->mail, data, msg->size);
     if(i == msg->size){ return 0; }
     else{ return 1; }
 }
