@@ -65,7 +65,6 @@ P_POOL stack_pool;
 P_POOL msgq_pool;
 P_POOL mail_pool;
 uint32_t slice_quantum;
-extern uint32_t MSP_bottom;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -83,8 +82,7 @@ extern uint32_t MSP_bottom;
   */
 void OSInit(uint32_t slice, char *memory, uint32_t size){
     uint32_t idle_interval;
-    
-    MSP_bottom = __get_MSP();
+
     slice_quantum = slice * (SystemCoreClock / 1000000);
 
     // Initialize task TCB pointers to NULL.

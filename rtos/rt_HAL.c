@@ -111,8 +111,15 @@ void PendSV_Handler(void){
     os_tsk.run->tsk_stack = __get_PSP() - 32;  
     __set_PSP(os_tsk.next->tsk_stack + 32);
     os_tsk.run = os_tsk.next;
+    
+    // Assign fresh timeslice for next task 
+#if (os_trigger_source == CM_SysTick)
     SysTick->LOAD = num_of_empty * slice_quantum - 0x30U;
     SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+#elif (os_trigger_source == ST_TIM6)
+    TIM6->CNT = 0;
+#endif 
+
     load_R4_R11();
 }
 
@@ -168,13 +175,11 @@ ready2return
   * @param  None
   * @retval None
   */
-uint32_t MSP_bottom;
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
         rt_start_counter--;
-
         // Schedular
-        rt_sched(0);
+        rt_sched();
         // Sched ends
         if(os_tsk.run != os_tsk.next){
             SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;    // Set PendSV to pending
@@ -215,11 +220,12 @@ void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
         rt_start_counter--;
-        TIM6->ARR = slice_quantum - 1U;
         // Schedular
         rt_sched();
         // Sched ends
-        
+        if(os_tsk.run != os_tsk.next){
+            SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;    // Set PendSV to pending
+        }
         TIM6->ARR = num_of_empty * slice_quantum - 1U;
         OSEnable();
     }
