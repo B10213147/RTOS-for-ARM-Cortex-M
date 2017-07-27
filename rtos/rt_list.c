@@ -214,7 +214,7 @@ void rt_task_dispatch(uint32_t checklr){
             } 
         }
     }
-    if(next_task && checklr == 0){
+    if(next_task){
         next_task->remain_ticks += next_task->interval;
         os_tsk.next = next_task;
     }
