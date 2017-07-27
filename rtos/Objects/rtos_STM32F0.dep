@@ -1,16 +1,118 @@
 Dependencies for Project 'rtos', Target 'STM32F0': (DO NOT MODIFY !)
-F (.\main.c)(0x595B890C)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I I:\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
-I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x4F6C6026)
+F (.\rtos.c)(0x59796F4B)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rtos.o --omf_browse .\objects\rtos.crf --depend .\objects\rtos.d)
+I (rtos.h)(0x59788B30)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rt_task.h)(0x59758FE4)
+I (rt_list.h)(0x59796DA8)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_memory.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (rt_HAL.h)(0x5977FD85)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\rt_HAL.c)(0x59797198)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rt_hal.o --omf_browse .\objects\rt_hal.crf --depend .\objects\rt_hal.d)
+I (rt_HAL.h)(0x5977FD85)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (rtos.h)(0x59788B30)
+I (rt_task.h)(0x59758FE4)
+I (rt_list.h)(0x59796DA8)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_memory.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\rt_task.c)(0x59791B95)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rt_task.o --omf_browse .\objects\rt_task.crf --depend .\objects\rt_task.d)
+I (rt_task.h)(0x59758FE4)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rtos.h)(0x59788B30)
+I (rt_list.h)(0x59796DA8)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_memory.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (rt_HAL.h)(0x5977FD85)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\rt_list.c)(0x59796DDC)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rt_list.o --omf_browse .\objects\rt_list.crf --depend .\objects\rt_list.d)
+I (rt_list.h)(0x59796DA8)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rtos.h)(0x59788B30)
+I (rt_task.h)(0x59758FE4)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_memory.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (rt_HAL.h)(0x5977FD85)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\rt_mailbox.c)(0x59791B95)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rt_mailbox.o --omf_browse .\objects\rt_mailbox.crf --depend .\objects\rt_mailbox.d)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rtos.h)(0x59788B30)
+I (rt_task.h)(0x59758FE4)
+I (rt_list.h)(0x59796DA8)
+I (rt_memory.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (rt_HAL.h)(0x5977FD85)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\rt_memory.c)(0x5977FD85)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rt_memory.o --omf_browse .\objects\rt_memory.crf --depend .\objects\rt_memory.d)
+I (rt_memory.h)(0x59718ED1)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+F (.\rt_mempool.c)(0x59791B95)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\rt_mempool.o --omf_browse .\objects\rt_mempool.crf --depend .\objects\rt_mempool.d)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rt_memory.h)(0x59718ED1)
+I (rtos.h)(0x59788B30)
+I (rt_task.h)(0x59758FE4)
+I (rt_list.h)(0x59796DA8)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (rt_HAL.h)(0x5977FD85)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\main.c)(0x59796DCF)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+I (rtos.h)(0x59788B30)
+I (rt_TypeDef.h)(0x5977FFC6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
+I (rt_task.h)(0x59758FE4)
+I (rt_list.h)(0x59796DA8)
+I (rt_mailbox.h)(0x59718ED1)
+I (rt_memory.h)(0x59718ED1)
+I (rt_mempool.h)(0x59732337)
+I (rt_HAL.h)(0x5977FD85)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
+I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
+I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
+F (.\CMSIS\Device\ST\STM32F0xx\Source\Templates\system_stm32f0xx.c)(0x4F6C6026)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\system_stm32f0xx.o --omf_browse .\objects\system_stm32f0xx.crf --depend .\objects\system_stm32f0xx.d)
+I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x597186B1)
 I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
 I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
 I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
 I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
-F (.\CMSIS\Device\ST\STM32F0xx\Source\Templates\system_stm32f0xx.c)(0x4F6C6026)(--c99 -c --cpu Cortex-M0 -D__EVAL -g -O0 --apcs=interwork --split_sections -I . -I .\CMSIS\Include -I .\CMSIS\Device\ST\STM32F0xx\Include-I I:\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="520" -DSTM32F051x8-o .\objects\system_stm32f0xx.o --omf_browse .\objects\system_stm32f0xx.crf --depend .\objects\system_stm32f0xx.d)
-I (.\CMSIS\Device\ST\STM32F0xx\Include\stm32f0xx.h)(0x4F6C6026)
-I (.\CMSIS\Include\core_cm0.h)(0x573CA1AB)
-I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x56FE42DE)
-I (.\CMSIS\Include\core_cmInstr.h)(0x573CA1AB)
-I (.\CMSIS\Include\core_cmFunc.h)(0x573CA1AB)
-I (.\CMSIS\Device\ST\STM32F0xx\Include\system_stm32f0xx.h)(0x4F6C6026)
-F (.\CMSIS\Device\ST\STM32F0xx\Source\Templates\arm\startup_stm32f0xx.s)(0x4F6C6026)(--cpu Cortex-M0 --pd "__EVAL SETA 1" -g --apcs=interwork -I I:\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "STM32F051x8 SETA 1"--list .\listings\startup_stm32f0xx.lst --xref -o .\objects\startup_stm32f0xx.o --depend .\objects\startup_stm32f0xx.d)
+F (.\CMSIS\Device\ST\STM32F0xx\Source\Templates\arm\startup_stm32f0xx.s)(0x4F6C6026)(--cpu Cortex-M0 --pd "__EVAL SETA 1" -g --apcs=interwork -I C:\Users\USER\Documents\GitHub\RTOS-for-ARM-Cortex-M\rtos\RTE-I C:\Keil_v5\ARM\PACK\Keil\STM32F0xx_DFP\1.5.0\Device\Include-I C:\Keil_v5\ARM\CMSIS\Include--pd "__UVISION_VERSION SETA 520" --pd "STM32F051x8 SETA 1"--list .\listings\startup_stm32f0xx.lst --xref -o .\objects\startup_stm32f0xx.o --depend .\objects\startup_stm32f0xx.d)
