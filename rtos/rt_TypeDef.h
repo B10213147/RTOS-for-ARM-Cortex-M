@@ -25,12 +25,22 @@ typedef struct OS_TCB{
     rt_stateType state;
     OS_TID task_id;
     struct OS_TCB *next;
-	voidfuncptr function;
-	void *arg;
+    voidfuncptr function;
+    void *arg;
     int interval;
     int remain_ticks;
     int priority;
+
+    uint16_t priv_stack;              /* Private stack size, 0= system assigned  */
+    uint32_t tsk_stack;               /* Current task Stack pointer (R13)        */
+    uint32_t *stack;                  /* Pointer to Task Stack memory block      */
+    struct mem *heap;
 }*P_TCB;
+
+typedef struct OS_TSK{
+    P_TCB run;
+    P_TCB next;
+}*P_TSK;
 
 typedef struct task_list{
     struct OS_TCB *task;
@@ -64,10 +74,5 @@ typedef struct msgq{
     uint32_t size;
     uint32_t blocks;
 }*P_MSGQ;
-
-typedef enum{
-    CM_SysTick,
-    ST_TIM6
-}triggerType;
 
 #endif /* RT_TYPEDEF_H_ */

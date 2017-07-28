@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "rt_list.h"
 #include "rtos.h"
+#include "rt_HAL.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -16,6 +17,7 @@
 /* Private variables ---------------------------------------------------------*/
 struct OS_TCB *os_running_tsk = 0;
 struct OS_TCB *os_rdy_tasks = 0;
+struct OS_TSK os_tsk = {0, 0};  // Running and next task info.
 int num_of_empty = 1;   // Number of timeslices from the last non-empty 
                         // timeslice to the next one.
 
@@ -114,7 +116,7 @@ P_LIST rt_list_updated(void){
     P_LIST another, prev, cur, list = NULL;
     for(task = os_rdy_tasks; task; task = task->next){
         task->remain_ticks -= num_of_empty;
-        if(task->remain_ticks > 0){
+        if(task->remain_ticks > 0 || task->state == Running){
             // Waiting time not expired yet
             if(next > task->remain_ticks){
                 next = task->remain_ticks;
@@ -147,7 +149,12 @@ P_LIST rt_list_updated(void){
                     list = another;
                 }
             } 
-            if(next > task->remain_ticks + task->interval){
+            if(list && list->next){
+                next = 1;
+            }
+            //else if(next > task->remain_ticks + task->interval){
+            else{
+                // Only has one task on the list
                 next = task->remain_ticks + task->interval;
             }
         }
@@ -174,25 +181,74 @@ P_TCB rt_rmv_list(P_LIST *list){
 }
 
 /**
+  * @brief  Dispatch task for next timeslice.
+  * @param  None
+  * @retval None
+  */
+void rt_task_dispatch(void){
+    int next = 0x7fffffff;
+    P_TCB task, next_task = NULL;
+    
+    os_tsk.run->state = Ready;
+    for(task = os_rdy_tasks; task; task = task->next){
+        task->remain_ticks -= num_of_empty;
+        if(task->remain_ticks > 0){
+            // Waiting time not expired yet
+            if(next > task->remain_ticks){
+                next = task->remain_ticks;
+            }
+        }
+        else{
+            // Another ready to be scheduled task
+            if(!next_task){
+                next_task = task;
+                if(next > task->remain_ticks + task->interval){
+                    next = task->remain_ticks + task->interval;
+                }
+            }
+            else if(task->priority < next_task->priority || \
+                (task->priority == next_task->priority && \
+                task->remain_ticks < next_task->remain_ticks)){    
+                next = next_task->remain_ticks; // OS will be triggered in next timeslice
+                next_task = task;
+            } 
+        }
+    }
+    if(next_task){
+        next_task->remain_ticks += next_task->interval;
+        os_tsk.next = next_task;
+    }
+    else{
+        // No task changing
+        os_tsk.next = os_tsk.run;
+    }
+    os_tsk.next->state = Running;   
+    if(next < 1 || next == 0x7fffffff){ next = 1; }
+    num_of_empty = next;    
+}
+
+/**
   * @brief  Entry of RTOS.
   * @param  None
   * @retval None
   */
 void rt_sched(void){
-    static P_LIST list = NULL;
-    while(list){ rt_rmv_list(&list); }
-    list = rt_list_updated();
-    while(list){        
-        os_running_tsk = rt_rmv_list(&list);
-        os_running_tsk->state = Running;
-        os_running_tsk->function();
-        if(os_running_tsk->state != Inactive){
-            os_running_tsk->state = Ready;
-            os_running_tsk->remain_ticks += os_running_tsk->interval;
-            os_running_tsk = 0;
+    if(os_tsk.run->state == Inactive){
+        // Delete current task
+        rt_rmv_task(&os_rdy_tasks, os_tsk.run);
+        rt_tsk_delete(os_tsk.run->task_id);
+        for(P_TCB task = os_rdy_tasks; task; task = task->next){
+            task->remain_ticks -= num_of_empty;
         }
-        else{
-            rt_tsk_delete(os_running_tsk->task_id);
-        }
+        os_tsk.run = os_active_TCB[0];  // Idle task
+        os_tsk.next = os_active_TCB[0]; // Avoid context switch
+        __set_PSP(os_tsk.run->tsk_stack + 8 * 4);
+        os_tsk.run->state = Running;
+        os_tsk.run->remain_ticks = os_tsk.run->interval;
+        num_of_empty = 1;
+        return;
+    }
+    if(os_tsk.run){
+        rt_task_dispatch();
     }
 }
