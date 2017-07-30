@@ -26,13 +26,13 @@ int main(void){
     
     return 0;    
 }
-P_MSGQ foo;
+void foo(void);
 void test1(void){
     char a[10];
     while(1){
         if(!OSMessageQRead(Rx1, a)){
             OSMessageQWrite(Tx1, a);
-            OSMessageQDistroy(foo);
+            OSTaskCreate(foo, 0, 3, 5);
         }        
     }
 }
@@ -41,7 +41,6 @@ void test2(void){
     while(1){
         if(!OSMessageQRead(Rx2, a)){
             OSMessageQWrite(Tx2, a);
-            foo = OSMessageQCreate(5, 5);
         }      
     }
 }
@@ -56,5 +55,10 @@ void test3(void){
             OSMessageQWrite(Rx1, a);
         }
         OSfree(a);
+    }
+}
+void foo(void){
+    while(1){
+        OSTaskDeleteSelf();
     }
 }
