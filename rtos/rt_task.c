@@ -46,12 +46,10 @@ OS_TID rt_get_TID(void){
 P_TCB rt_tsk_create(P_TCB task){
     P_TCB p_task;
     OS_TID task_id;
-    OSDisable();
     
     p_task = (P_TCB)rt_pool_alloc(task_pool);
     if(!p_task){ 
         // Memory alloc failed
-        OSEnable();
         return NULL; 
     }   
     p_task->function = task->function;
@@ -66,7 +64,6 @@ P_TCB rt_tsk_create(P_TCB task){
     if(task_id == 0){ 
         // Task create failed
         rt_mem_free(&system_memory, p_task);
-        OSEnable();
         return NULL; 
     }   
     os_active_TCB[task_id-1] = p_task;
@@ -74,10 +71,11 @@ P_TCB rt_tsk_create(P_TCB task){
 
     while(rt_init_stack(p_task, rt_pool_alloc(stack_pool), \
                         os_stack_size + os_heap_size));
-    p_task->heap = (P_MEM)rt_pool_alloc(heap_pool);
-    rt_mem_create(p_task->heap, (char *)(p_task->stack), os_heap_size);
-    
-    OSEnable();    
+    // Create memory header at the top of stack
+    rt_mem_create((P_MEM)(p_task->stack), \
+            (char *)((uint32_t)(p_task->stack) + sizeof(struct mem)), \
+            os_heap_size);
+      
     return p_task;
 }
 
@@ -89,7 +87,6 @@ P_TCB rt_tsk_create(P_TCB task){
   */
 uint8_t rt_tsk_delete(OS_TID task_id){
     P_TCB p_TCB;
-    OSDisable();
     
     if(task_id == 0 || \
         task_id > max_active_TCB || \
@@ -100,10 +97,8 @@ uint8_t rt_tsk_delete(OS_TID task_id){
     }
     p_TCB = os_active_TCB[task_id-1];
     os_active_TCB[task_id-1] = 0;
-    rt_pool_free(heap_pool, p_TCB->heap);
     rt_pool_free(stack_pool, p_TCB->stack);
     rt_pool_free(task_pool, p_TCB);
     
-    OSEnable();
     return 0;
 }

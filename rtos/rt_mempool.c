@@ -26,14 +26,12 @@
   */
 P_POOL rt_pool_create(uint32_t size, uint32_t blocks){
     P_POOL pool;
-    OSDisable();
     
     // 4-byte alignment
     size = (size + 3U) & ~3U;
     pool = (P_POOL)rt_mem_alloc(&system_memory, 
         sizeof(struct mempool) + blocks * (size + 1));
     if(!pool){ 
-        OSEnable();
         return NULL; 
     }
     pool->size = size;
@@ -45,7 +43,6 @@ P_POOL rt_pool_create(uint32_t size, uint32_t blocks){
         pool->active_id[i] = 0;
     }
     
-    OSEnable();
     return pool;
 }
 
@@ -55,9 +52,7 @@ P_POOL rt_pool_create(uint32_t size, uint32_t blocks){
   * @retval None
   */
 void rt_pool_distroy(P_POOL pool){
-    OSDisable();
     rt_mem_free(&system_memory, pool);
-    OSEnable();
 }
 
 /**
@@ -86,10 +81,8 @@ void *rt_pool_alloc(P_POOL pool){
   */
 void rt_pool_free(P_POOL pool, void *ptr){
     int id;
-    OSDisable();
     id = ((uint32_t)ptr - (uint32_t)pool->pool) / pool->size;
     if(id >= 0 && id < pool->blocks){
         pool->active_id[id] = 0;
     }
-    OSEnable();
 }

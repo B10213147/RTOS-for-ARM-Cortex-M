@@ -1,4 +1,11 @@
 --cpu Cortex-M0
+".\objects\rtos.o"
+".\objects\rt_hal.o"
+".\objects\rt_task.o"
+".\objects\rt_list.o"
+".\objects\rt_mailbox.o"
+".\objects\rt_memory.o"
+".\objects\rt_mempool.o"
 ".\objects\main.o"
 ".\objects\system_stm32f0xx.o"
 ".\objects\startup_stm32f0xx.o"
