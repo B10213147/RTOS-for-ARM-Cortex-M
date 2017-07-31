@@ -14,6 +14,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
+void PendSV_Handler(void);
 void SysTick_Handler(void);
 void TIM6_DAC_IRQHandler(void);
 void ST_Blink(void);
@@ -105,12 +106,67 @@ __ASM void load_R4_R11(void){
   * @param  None
   * @retval None
   */
-void rt_context_switch(void){
+void PendSV_Handler(void){
     save_R4_R11();
     os_tsk.run->tsk_stack = __get_PSP() - 32;  
     __set_PSP(os_tsk.next->tsk_stack + 32);
     os_tsk.run = os_tsk.next;
+    
+    // Assign fresh timeslice for next task 
+#if (os_trigger_source == CM_SysTick)
+    SysTick->LOAD = num_of_empty * slice_quantum - 0x30U;
+    SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
+#elif (os_trigger_source == ST_TIM6)
+    TIM6->CNT = 0;
+#endif 
+
     load_R4_R11();
+}
+
+// SVC handler - Assembly wrapper to extract
+// stack frame starting address
+uint32_t svc_exc_return; // EXC_RETURN use by SVC
+__asm void SVC_Handler(void)
+{   
+    MOVS    R0, #4  // Extract stack frame location
+    MOV     R1, LR
+    TST     R0, R1
+    BEQ     stacking_used_MSP
+    MRS     R0, PSP // first parameter - stacking was using PSP
+    B       SVC_Handler_cont
+stacking_used_MSP
+    MRS     R0, MSP // first parameter - stacking was using MSP
+SVC_Handler_cont
+    LDR     R2,=__cpp(&svc_exc_return) // Save current EXC_RETURN
+    MOV     R1, LR
+    STR     R1,[R2]
+    
+    MOV     LR,R4
+    LDMIA   R0,{R0-R3,R4}           // Read R0-R3,R12 from stack 
+    MOV     R12,R4
+    MOV     R4,LR
+    BLX     R12                     // Call SVC Function 
+
+    PUSH    {R4-R5}                 // Allocate two registers
+    LDR     R5,=__cpp(&svc_exc_return) // Load new EXC_RETURN
+    LDR     R4,[R5]
+    MOVS    R3, #4
+    TST     R3, R4                  // Check EXC_RETURN
+    POP     {R4-R5}                 // Free two registers
+    BEQ     used_MSP
+    MRS     R3,PSP                  // Read PSP
+    STMIA   R3!,{R0-R2}             // Store return values 
+    MOVS    R0,#:NOT:0xFFFFFFFD     // Set EXC_RETURN value
+    B       ready2return
+used_MSP
+    MRS     R3,MSP                  // Read MSP
+    STMIA   R3!,{R0-R2}             // Store return values 
+    MOVS    R0,#:NOT:0xFFFFFFF9     // Set EXC_RETURN value 
+ready2return    
+    MVNS    R0,R0
+    BX      R0                      // RETI to Thread Mode
+
+    ALIGN
 }
 
 #if os_trigger_source == CM_SysTick
@@ -122,15 +178,13 @@ void rt_context_switch(void){
 void SysTick_Handler(void){
     if(SysTick->CTRL & SysTick_CTRL_COUNTFLAG_Msk){
         rt_start_counter--;
-        SysTick->LOAD = slice_quantum - 0x10U;  // Calibration
-        SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         // Schedular
         rt_sched();
         // Sched ends
         if(os_tsk.run != os_tsk.next){
-            rt_context_switch();
+            SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;    // Set PendSV to pending
         }
-        SysTick->LOAD = SysTick->VAL + (num_of_empty - 1) * slice_quantum - 0x18U;
+        SysTick->LOAD = num_of_empty * slice_quantum - 0x18U;
         SysTick->VAL = 0;   // Any write to this register clears the SysTick counter to 0
         OSEnable();
     }
@@ -166,11 +220,12 @@ void TIM6_DAC_IRQHandler(void){
     if(TIM6->SR & TIM_SR_UIF){
         TIM6->SR = ~TIM_SR_UIF;
         rt_start_counter--;
-        TIM6->ARR = slice_quantum - 1U;
         // Schedular
         rt_sched();
         // Sched ends
-        
+        if(os_tsk.run != os_tsk.next){
+            SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;    // Set PendSV to pending
+        }
         TIM6->ARR = num_of_empty * slice_quantum - 1U;
         OSEnable();
     }

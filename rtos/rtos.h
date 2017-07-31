@@ -14,6 +14,7 @@
 #include "rt_mailbox.h"
 #include "rt_memory.h"
 #include "rt_mempool.h"
+#include "rt_HAL.h"
 
 // Platform
 #define     STM32F0             1U
@@ -55,7 +56,6 @@ extern struct mem system_memory;
 extern P_POOL task_pool;
 extern P_POOL list_pool;
 extern P_POOL stack_pool;
-extern P_POOL heap_pool;
 extern P_POOL msgq_pool;
 extern P_POOL mail_pool;
 
